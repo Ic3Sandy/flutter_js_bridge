@@ -31,8 +31,22 @@ Add the package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  flutter_js_bridge: ^1.0.0
+  flutter_js_bridge: ^0.0.1
 ```
+
+### Development Version
+
+To use the development version from the Git repository:
+
+```yaml
+dependencies:
+  flutter_js_bridge:
+    git:
+      url: https://github.com/YOUR_USERNAME/flutter_js_bridge.git
+      ref: main
+```
+
+Replace `YOUR_USERNAME` with your GitHub username after pushing to GitHub.
 
 ## Usage
 
