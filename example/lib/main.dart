@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_js_bridge/flutter_js_bridge.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 void main() {
@@ -29,7 +28,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   late WebViewController _webViewController;
   String _receivedMessage = 'No message received yet';
-  bool _isBridgeReady = false;
 
   // A minimal HTML page for testing
   final String _minimalHtml = '''
