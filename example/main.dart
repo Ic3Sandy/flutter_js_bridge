@@ -30,8 +30,8 @@ class _MyHomePageState extends State<MyHomePage> {
   late JSEventBus _eventBus;
   String _receivedMessage = 'No message received yet';
   final List<String> _eventLog = [];
-  JSEventSubscription? _loginSubscription;
-  JSEventSubscription? _allEventsSubscription;
+  IJSEventSubscription? _loginSubscription;
+  IJSEventSubscription? _allEventsSubscription;
   bool _isFilteringAdminEvents = false;
 
   final String _initialHtml = '''
