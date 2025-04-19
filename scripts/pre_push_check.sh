@@ -13,9 +13,9 @@ flutter --version
 echo "Checking for outdated dependencies..."
 flutter pub outdated
 
-# Format code
-echo "Formatting code..."
-dart format .
+# Check code formatting
+echo "Checking code formatting..."
+dart format . --set-exit-if-changed
 
 # Run static analysis
 echo "Running static analysis..."

@@ -6,44 +6,40 @@ name: Flutter Tests
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       # Set up Dart SDK first
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@v1
         with:
-          sdk: '3.7.2'
-      
+          sdk: "3.7.2"
+
       # Then set up Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.3'
-          channel: 'stable'
-      
+          flutter-version: "3.29.3"
+          channel: "stable"
+
       # Verify installed versions
       - name: Verify Dart and Flutter versions
         run: |
           dart --version
           flutter --version
-      
-      
+
       - name: Install dependencies
         run: flutter pub get
-      
-      - name: Format code
-        run: dart format .
-      
+
       - name: Analyze project source
         run: flutter analyze
-      
+
       - name: Run tests
         run: flutter test

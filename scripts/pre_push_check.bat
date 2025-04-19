@@ -15,8 +15,8 @@ if %ERRORLEVEL% neq 0 (
     exit /b %ERRORLEVEL%
 )
 
-echo Formatting code...
-dart format .
+echo Checking code formatting...
+dart format . --set-exit-if-changed
 if %ERRORLEVEL% neq 0 (
     echo Error formatting code
     exit /b %ERRORLEVEL%
