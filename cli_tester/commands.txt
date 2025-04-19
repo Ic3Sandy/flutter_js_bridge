@@ -1,0 +1,7 @@
+register-handler formSubmit
+send-event buttonClick {\
+id\:\submit-btn\,\value\:\Submit\}
+simulate-js getData {\
+userId\:123}
+call-js updateUI {\
+visible\:true,\color\:\blue\}
