@@ -14,6 +14,9 @@ class JSMessage {
   /// Whether this message expects a response
   final bool expectsResponse;
 
+  /// Whether this message is a response to another message
+  final bool isResponse;
+
   /// Creates a new message
   ///
   /// [id] must not be empty
@@ -25,6 +28,7 @@ class JSMessage {
     required this.action,
     this.data,
     this.expectsResponse = false,
+    this.isResponse = false,
   }) {
     if (id.isEmpty) {
       throw ArgumentError('Message ID cannot be empty');
@@ -41,6 +45,7 @@ class JSMessage {
       action: json['action'] as String,
       data: json['data'],
       expectsResponse: json['expectsResponse'] as bool? ?? false,
+      isResponse: json['isResponse'] as bool? ?? false,
     );
   }
 
@@ -67,12 +72,14 @@ class JSMessage {
     String? action,
     dynamic data,
     bool? expectsResponse,
+    bool? isResponse,
   }) {
     return JSMessage(
       id: id ?? this.id,
       action: action ?? this.action,
       data: data ?? this.data,
       expectsResponse: expectsResponse ?? this.expectsResponse,
+      isResponse: isResponse ?? this.isResponse,
     );
   }
 
@@ -83,6 +90,7 @@ class JSMessage {
       'action': action,
       'data': data,
       'expectsResponse': expectsResponse,
+      'isResponse': isResponse,
     };
   }
 

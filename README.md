@@ -30,7 +30,7 @@ A Flutter library for seamless communication between JavaScript (WebView) and Fl
 - [ ] Type safety & serialization: Support for custom serialization/deserialization of complex Dart and JS objects, and safe type-checking utilities.
 - [ ] Event broadcasting: System for broadcasting events between JS and Flutter with multiple listeners.
 - [ ] Plugin/extension system: Allow registration of plugins/extensions on either side for reusable communication patterns.
-- [ ] Debugging tools: Logging and debugging utilities for inspecting messages and errors.
+- [x] Debugging tools: Logging and debugging utilities for inspecting messages and errors.
 - [ ] Security features: Message validation, origin checks, and permission controls.
 - [ ] Queue & retry mechanism: Message queuing and retry logic for unreliable states.
 - [ ] Batch messaging: Support for batching multiple messages/commands for performance.
