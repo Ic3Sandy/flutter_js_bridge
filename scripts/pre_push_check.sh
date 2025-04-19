@@ -5,6 +5,14 @@ set -e
 
 echo "Running pre-push checks..."
 
+# Check Flutter version
+echo "Checking Flutter version..."
+flutter --version
+
+# Check for outdated dependencies
+echo "Checking for outdated dependencies..."
+flutter pub outdated
+
 # Format code
 echo "Formatting code..."
 dart format .

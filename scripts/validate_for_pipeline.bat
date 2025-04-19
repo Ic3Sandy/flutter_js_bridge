@@ -1,10 +1,17 @@
 @echo off
-echo Running pre-push checks...
+echo Running pre-pipeline validation...
 
-echo Checking Flutter version...
+echo Checking Flutter and Dart versions...
 flutter --version
 if %ERRORLEVEL% neq 0 (
     echo Error checking Flutter version
+    exit /b %ERRORLEVEL%
+)
+
+echo Validating pubspec.yaml...
+flutter pub get
+if %ERRORLEVEL% neq 0 (
+    echo Error validating dependencies
     exit /b %ERRORLEVEL%
 )
 
@@ -16,9 +23,10 @@ if %ERRORLEVEL% neq 0 (
 )
 
 echo Formatting code...
-dart format .
+dart format . --set-exit-if-changed
 if %ERRORLEVEL% neq 0 (
-    echo Error formatting code
+    echo Error: Code formatting issues found
+    echo Please run 'dart format .' to fix formatting issues
     exit /b %ERRORLEVEL%
 )
 
@@ -36,4 +44,4 @@ if %ERRORLEVEL% neq 0 (
     exit /b %ERRORLEVEL%
 )
 
-echo All checks passed! You can now push your changes.
+echo All validation checks passed! Your code is ready for the pipeline.
