@@ -31,7 +31,7 @@ if %ERRORLEVEL% neq 0 (
 )
 
 echo Running static analysis...
-flutter analyze --exclude=cli_tester
+flutter analyze
 if %ERRORLEVEL% neq 0 (
     echo Error during static analysis
     exit /b %ERRORLEVEL%

@@ -19,7 +19,7 @@ dart format .
 
 # Run static analysis
 echo "Running static analysis..."
-flutter analyze --exclude=cli_tester
+flutter analyze
 
 # Run tests
 echo "Running tests..."

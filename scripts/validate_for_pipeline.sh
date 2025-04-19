@@ -23,7 +23,7 @@ if ! dart format . --set-exit-if-changed; then
 fi
 
 echo "Running static analysis..."
-flutter analyze --exclude=cli_tester
+flutter analyze
 
 echo "Running tests..."
 flutter test

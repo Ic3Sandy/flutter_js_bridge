@@ -43,7 +43,7 @@ jobs:
         run: dart format .
       
       - name: Analyze project source
-        run: flutter analyze --exclude=cli_tester
+        run: flutter analyze
       
       - name: Run tests
         run: flutter test
