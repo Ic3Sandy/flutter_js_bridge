@@ -1,9 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_js_bridge/flutter_js_bridge.dart';
-import 'package:flutter_js_bridge/src/debug/js_bridge_logger.dart';
-import 'package:flutter_js_bridge/src/debug/js_debug_config.dart';
-import 'package:flutter_js_bridge/src/debug/js_debug_manager.dart';
-import 'package:flutter_js_bridge/src/debug/js_message_inspector.dart';
 
 
 void main() {
@@ -52,7 +48,7 @@ void main() {
     group('configuration', () {
       test('should update config with new values', () {
         // Arrange
-        final newConfig = JSDebugConfig(
+        const newConfig = JSDebugConfig(
           isLoggingEnabled: false,
           logLevel: JSLogLevel.error,
           isMessageInspectionEnabled: false,
@@ -109,7 +105,7 @@ void main() {
 
       test('should respect config for logging enabled/disabled', () {
         // Arrange
-        debugManager.updateConfig(JSDebugConfig(
+        debugManager.updateConfig(const JSDebugConfig(
           isLoggingEnabled: false,
           logLevel: JSLogLevel.debug,
           isMessageInspectionEnabled: true,
@@ -140,7 +136,7 @@ void main() {
         final message = JSMessage(
           id: 'test-id',
           action: 'test-action',
-          data: {'key': 'value'},
+          data: const {'key': 'value'},
           expectsResponse: true,
         );
 
@@ -158,9 +154,9 @@ void main() {
 
       test('should respect config for message inspection enabled/disabled', () {
         // Arrange
-        debugManager.updateConfig(JSDebugConfig(
+        debugManager.updateConfig(const JSDebugConfig(
           isLoggingEnabled: true,
-          logLevel: JSLogLevel.debug,
+          logLevel: JSLogLevel.warning,
           isMessageInspectionEnabled: false,
           isPerformanceMonitoringEnabled: true,
         ));

@@ -7,7 +7,7 @@ void main() {
     // Test fixtures
     const kTestId = 'test-id';
     const kTestAction = 'test-action';
-    final kTestData = {'key': 'value'};
+    const kTestData = {'key': 'value'};
     const kExpectsResponse = true;
     const kIsResponse = false;
     

@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_js_bridge/flutter_js_bridge.dart';
-import 'package:flutter_js_bridge/src/debug/js_message_inspector.dart';
 
 void main() {
   group('JSMessageInspector', () {

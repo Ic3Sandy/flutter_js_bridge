@@ -1,8 +1,4 @@
 import 'package:flutter_js_bridge/flutter_js_bridge.dart';
-import 'package:flutter_js_bridge/src/debug/js_bridge_logger.dart';
-import 'package:flutter_js_bridge/src/debug/js_debug_config.dart';
-import 'package:flutter_js_bridge/src/debug/js_message_inspector.dart';
-import 'package:flutter_js_bridge/src/debug/js_performance_monitor.dart';
 
 /// A manager for debugging features in the JS Bridge
 class JSDebugManager {

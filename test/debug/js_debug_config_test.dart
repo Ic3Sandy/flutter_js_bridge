@@ -1,12 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_js_bridge/src/debug/js_debug_config.dart';
-import 'package:flutter_js_bridge/src/debug/js_bridge_logger.dart';
+import 'package:flutter_js_bridge/flutter_js_bridge.dart';
 
 void main() {
   group('JSDebugConfig', () {
     test('should have default values', () {
       // Act
-      final config = JSDebugConfig();
+      const config = JSDebugConfig();
       
       // Assert
       expect(config.isLoggingEnabled, false);
@@ -18,7 +17,7 @@ void main() {
 
     test('should be configurable via constructor', () {
       // Act
-      final config = JSDebugConfig(
+      const config = JSDebugConfig(
         isLoggingEnabled: true,
         logLevel: JSLogLevel.debug,
         isMessageInspectionEnabled: true,
@@ -36,7 +35,7 @@ void main() {
 
     test('should be configurable via copyWith', () {
       // Arrange
-      final config = JSDebugConfig();
+      const config = JSDebugConfig();
       
       // Act
       final newConfig = config.copyWith(
@@ -64,17 +63,17 @@ void main() {
 
     test('should support equality comparison', () {
       // Arrange
-      final config1 = JSDebugConfig(
+      const config1 = JSDebugConfig(
         isLoggingEnabled: true,
         logLevel: JSLogLevel.debug,
       );
       
-      final config2 = JSDebugConfig(
+      const config2 = JSDebugConfig(
         isLoggingEnabled: true,
         logLevel: JSLogLevel.debug,
       );
       
-      final config3 = JSDebugConfig(
+      const config3 = JSDebugConfig(
         isLoggingEnabled: true,
         logLevel: JSLogLevel.warning,
       );
@@ -86,7 +85,7 @@ void main() {
 
     test('should convert to string representation', () {
       // Arrange
-      final config = JSDebugConfig(
+      const config = JSDebugConfig(
         isLoggingEnabled: true,
         logLevel: JSLogLevel.debug,
         isMessageInspectionEnabled: true,
