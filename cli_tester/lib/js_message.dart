@@ -4,16 +4,16 @@ import 'dart:convert';
 class JSMessage {
   /// Unique identifier for the message
   final String id;
-  
+
   /// Action to perform
   final String action;
-  
+
   /// Data payload
   final dynamic data;
-  
+
   /// Whether a response is expected
   final bool expectsResponse;
-  
+
   /// Creates a new message
   JSMessage({
     required this.id,
@@ -21,7 +21,7 @@ class JSMessage {
     this.data,
     this.expectsResponse = false,
   });
-  
+
   /// Creates a message from a JSON string
   factory JSMessage.fromJsonString(String jsonString) {
     final Map<String, dynamic> json = jsonDecode(jsonString);
@@ -32,7 +32,7 @@ class JSMessage {
       expectsResponse: json['expectsResponse'] as bool? ?? false,
     );
   }
-  
+
   /// Converts the message to a JSON string
   String toJsonString() {
     return jsonEncode({

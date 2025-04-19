@@ -15,11 +15,10 @@ void main() {
 
   setUp(() {
     mockController = MockJSBridgeController();
-    
+
     // Setup the mock to capture the event handler function
-    when(mockController.registerHandler(any, any))
-        .thenReturn(null);
-        
+    when(mockController.registerHandler(any, any)).thenReturn(null);
+
     eventBus = JSEventBus(mockController);
   });
 
@@ -42,7 +41,7 @@ void main() {
     test('should allow subscribing to events by name', () {
       // Arrange & Act
       final subscription = eventBus.on('userLogin', (_) {});
-      
+
       // Assert
       expect(subscription, isNotNull);
       expect(eventBus.hasSubscribers('userLogin'), isTrue);
@@ -51,7 +50,7 @@ void main() {
     test('should allow subscribing to all events with onAny', () {
       // Arrange & Act
       final subscription = eventBus.onAny((_) {});
-      
+
       // Assert
       expect(subscription, isNotNull);
       expect(eventBus.hasSubscribers('anyEvent'), isTrue);
@@ -60,11 +59,11 @@ void main() {
     test('should allow subscribing with filters using onWhere', () {
       // Arrange & Act
       final subscription = eventBus.onWhere(
-        'userLogin', 
+        'userLogin',
         (event) => event.data is Map && (event.data as Map)['role'] == 'admin',
-        (_) {}
+        (_) {},
       );
-      
+
       // Assert
       expect(subscription, isNotNull);
       expect(eventBus.hasSubscribers('userLogin'), isTrue);
@@ -74,10 +73,10 @@ void main() {
       // Arrange
       final subscription = eventBus.on('userLogin', (_) {});
       expect(eventBus.hasSubscribers('userLogin'), isTrue);
-      
+
       // Act
       subscription.cancel();
-      
+
       // Assert
       expect(eventBus.hasSubscribers('userLogin'), isFalse);
     });
@@ -88,27 +87,35 @@ void main() {
       // Arrange
       bool loginEventReceived = false;
       bool logoutEventReceived = false;
-      
+
       eventBus.on('userLogin', (JSEvent event) {
         loginEventReceived = true;
         expect(event.name, equals('userLogin'));
         expect(event.data, equals({'userId': '123'}));
       });
-      
+
       eventBus.on('userLogout', (JSEvent event) {
         logoutEventReceived = true;
       });
-      
+
       // Act - simulate event from JavaScript
-      final args = [{'name': 'userLogin', 'data': {'userId': '123'}}];
-      
+      final args = [
+        {
+          'name': 'userLogin',
+          'data': {'userId': '123'},
+        },
+      ];
+
       // Extract the handler that was registered
-      final handler = verify(mockController.registerHandler('event', captureAny))
-          .captured.first as Function;
-      
+      final handler =
+          verify(
+                mockController.registerHandler('event', captureAny),
+              ).captured.first
+              as Function;
+
       // Call the handler directly
       handler(args);
-      
+
       // Assert
       expect(loginEventReceived, isTrue);
       expect(logoutEventReceived, isFalse);
@@ -118,24 +125,34 @@ void main() {
       // Arrange
       int eventsReceived = 0;
       final events = <String>[];
-      
+
       eventBus.onAny((JSEvent event) {
         eventsReceived++;
         events.add(event.name);
       });
-      
+
       // Act - simulate multiple events from JavaScript
-      final loginArgs = [{'name': 'userLogin', 'data': {'userId': '123'}}];
-      final logoutArgs = [{'name': 'userLogout', 'data': null}];
-      
+      final loginArgs = [
+        {
+          'name': 'userLogin',
+          'data': {'userId': '123'},
+        },
+      ];
+      final logoutArgs = [
+        {'name': 'userLogout', 'data': null},
+      ];
+
       // Extract the handler that was registered
-      final handler = verify(mockController.registerHandler('event', captureAny))
-          .captured.first as Function;
-      
+      final handler =
+          verify(
+                mockController.registerHandler('event', captureAny),
+              ).captured.first
+              as Function;
+
       // Call the handler directly with different events
       handler(loginArgs);
       handler(logoutArgs);
-      
+
       // Assert
       expect(eventsReceived, equals(2));
       expect(events, containsAll(['userLogin', 'userLogout']));
@@ -144,30 +161,43 @@ void main() {
     test('should support filtering events by criteria', () {
       // Arrange
       bool adminLoginReceived = false;
-      
+
       eventBus.onWhere(
-        'userLogin', 
+        'userLogin',
         (event) => event.data is Map && (event.data as Map)['role'] == 'admin',
         (event) {
           adminLoginReceived = true;
-        }
+        },
       );
-      
+
       // Act - simulate regular user login (should not trigger)
-      final userArgs = [{'name': 'userLogin', 'data': {'userId': '123', 'role': 'user'}}];
-      final adminArgs = [{'name': 'userLogin', 'data': {'userId': '456', 'role': 'admin'}}];
-      
+      final userArgs = [
+        {
+          'name': 'userLogin',
+          'data': {'userId': '123', 'role': 'user'},
+        },
+      ];
+      final adminArgs = [
+        {
+          'name': 'userLogin',
+          'data': {'userId': '456', 'role': 'admin'},
+        },
+      ];
+
       // Extract the handler that was registered
-      final handler = verify(mockController.registerHandler('event', captureAny))
-          .captured.first as Function;
-      
+      final handler =
+          verify(
+                mockController.registerHandler('event', captureAny),
+              ).captured.first
+              as Function;
+
       // Call the handler with user login (should not trigger)
       handler(userArgs);
       expect(adminLoginReceived, isFalse);
-      
+
       // Call the handler with admin login (should trigger)
       handler(adminArgs);
-      
+
       // Assert
       expect(adminLoginReceived, isTrue);
     });
@@ -177,16 +207,21 @@ void main() {
     test('should publish events to JavaScript', () {
       // Arrange
       final event = JSEvent(name: 'userLogin', data: {'userId': '123'});
-      
+
       // Act
       eventBus.publish(event);
-      
+
       // Assert
-      verify(mockController.sendToJavaScript('event', data: {
-        'name': 'userLogin',
-        'data': {'userId': '123'},
-        'isMainFrame': true,
-      })).called(1);
+      verify(
+        mockController.sendToJavaScript(
+          'event',
+          data: {
+            'name': 'userLogin',
+            'data': {'userId': '123'},
+            'isMainFrame': true,
+          },
+        ),
+      ).called(1);
     });
 
     test('should notify local subscribers when publishing events', () {
@@ -197,10 +232,10 @@ void main() {
         expect(event.name, equals('userLogin'));
         expect(event.data, equals({'userId': '123'}));
       });
-      
+
       // Act
       eventBus.publish(JSEvent(name: 'userLogin', data: {'userId': '123'}));
-      
+
       // Assert
       expect(eventReceived, isTrue);
     });
@@ -213,25 +248,35 @@ void main() {
       final subscription = eventBus.eventStream.listen((event) {
         receivedEvents.add(event);
       });
-      
+
       // Act - simulate events from JavaScript
-      final loginArgs = [{'name': 'userLogin', 'data': {'userId': '123'}}];
-      final logoutArgs = [{'name': 'userLogout', 'data': null}];
-      
+      final loginArgs = [
+        {
+          'name': 'userLogin',
+          'data': {'userId': '123'},
+        },
+      ];
+      final logoutArgs = [
+        {'name': 'userLogout', 'data': null},
+      ];
+
       // Extract the handler that was registered
-      final handler = verify(mockController.registerHandler('event', captureAny))
-          .captured.first as Function;
-      
+      final handler =
+          verify(
+                mockController.registerHandler('event', captureAny),
+              ).captured.first
+              as Function;
+
       // Call the handler directly with different events
       handler(loginArgs);
       handler(logoutArgs);
-      
+
       // Wait for stream events to be processed
       await Future.delayed(Duration.zero);
-      
+
       // Cleanup
       subscription.cancel();
-      
+
       // Assert
       expect(receivedEvents.length, equals(2));
       expect(receivedEvents[0].name, equals('userLogin'));
@@ -244,27 +289,42 @@ void main() {
       final subscription = eventBus.eventStreamOf('userLogin').listen((event) {
         receivedEvents.add(event);
       });
-      
+
       // Act - simulate events from JavaScript
-      final loginArgs = [{'name': 'userLogin', 'data': {'userId': '123'}}];
-      final logoutArgs = [{'name': 'userLogout', 'data': null}];
-      final loginArgs2 = [{'name': 'userLogin', 'data': {'userId': '456'}}];
-      
+      final loginArgs = [
+        {
+          'name': 'userLogin',
+          'data': {'userId': '123'},
+        },
+      ];
+      final logoutArgs = [
+        {'name': 'userLogout', 'data': null},
+      ];
+      final loginArgs2 = [
+        {
+          'name': 'userLogin',
+          'data': {'userId': '456'},
+        },
+      ];
+
       // Extract the handler that was registered
-      final handler = verify(mockController.registerHandler('event', captureAny))
-          .captured.first as Function;
-      
+      final handler =
+          verify(
+                mockController.registerHandler('event', captureAny),
+              ).captured.first
+              as Function;
+
       // Call the handler directly with different events
       handler(loginArgs);
       handler(logoutArgs);
       handler(loginArgs2);
-      
+
       // Wait for stream events to be processed
       await Future.delayed(Duration.zero);
-      
+
       // Cleanup
       subscription.cancel();
-      
+
       // Assert
       expect(receivedEvents.length, equals(2));
       expect(receivedEvents[0].name, equals('userLogin'));
@@ -278,12 +338,18 @@ void main() {
     test('should throw when using a disposed event bus', () {
       // Arrange
       eventBus.dispose();
-      
+
       // Act & Assert
       expect(() => eventBus.on('test', (_) {}), throwsStateError);
       expect(() => eventBus.onAny((_) {}), throwsStateError);
-      expect(() => eventBus.onWhere('test', (_) => true, (_) {}), throwsStateError);
-      expect(() => eventBus.publish(JSEvent(name: 'test', data: null)), throwsStateError);
+      expect(
+        () => eventBus.onWhere('test', (_) => true, (_) {}),
+        throwsStateError,
+      );
+      expect(
+        () => eventBus.publish(JSEvent(name: 'test', data: null)),
+        throwsStateError,
+      );
       expect(() => eventBus.hasSubscribers('test'), throwsStateError);
       expect(() => eventBus.eventStream, throwsStateError);
       expect(() => eventBus.eventStreamOf('test'), throwsStateError);

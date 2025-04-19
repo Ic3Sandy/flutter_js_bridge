@@ -13,7 +13,7 @@ class JSEventSubscription {
   bool _isCancelled = false;
 
   /// Creates a new subscription to events
-  /// 
+  ///
   /// [eventName] The name of the event to subscribe to, or '*' for all events
   /// [handler] The function to call when the event is received
   /// [isWildcard] Whether this is a wildcard subscription that receives all events
@@ -24,8 +24,8 @@ class JSEventSubscription {
     this._handler, {
     bool isWildcard = false,
     bool Function(JSEvent)? filter,
-  })  : _isWildcard = isWildcard,
-        _filter = filter;
+  }) : _isWildcard = isWildcard,
+       _filter = filter;
 
   /// Cancels this subscription
   void cancel() {
@@ -56,16 +56,17 @@ class JSEventSubscription {
 class JSEventBus {
   final JSBridgeController _controller;
   final List<JSEventSubscription> _subscriptions = [];
-  final StreamController<JSEvent> _eventStreamController = StreamController<JSEvent>.broadcast();
+  final StreamController<JSEvent> _eventStreamController =
+      StreamController<JSEvent>.broadcast();
 
   /// Creates a new event bus with the given bridge controller
-  /// 
+  ///
   /// [controller] The JSBridgeController to use for communication with JavaScript
   JSEventBus(this._controller) {
     // Register a global handler for all events
     _controller.registerHandler('event', _handleEvent);
   }
-  
+
   /// Converts a JSEvent to a JSON map
   Map<String, dynamic> _eventToJson(JSEvent event) {
     return {
@@ -92,13 +93,14 @@ class JSEventBus {
 
     // Convert the event data to a JSEvent
     final eventData = args[0];
-    final JSEvent event = eventData is JSEvent
-        ? eventData
-        : _createEventFromJson(eventData as Map<String, dynamic>);
+    final JSEvent event =
+        eventData is JSEvent
+            ? eventData
+            : _createEventFromJson(eventData as Map<String, dynamic>);
 
     // Add the event to the stream
     _eventStreamController.add(event);
-    
+
     // Notify all matching subscribers
     _notifySubscribers(event);
 
@@ -121,10 +123,10 @@ class JSEventBus {
   }
 
   /// Subscribes to events with the given name
-  /// 
+  ///
   /// [eventName] The name of the event to subscribe to
   /// [handler] The function to call when the event is received
-  /// 
+  ///
   /// Returns a subscription that can be cancelled
   JSEventSubscription on(String eventName, JSEventHandler handler) {
     final subscription = JSEventSubscription(this, eventName, handler);
@@ -133,22 +135,27 @@ class JSEventBus {
   }
 
   /// Subscribes to all events
-  /// 
+  ///
   /// [handler] The function to call when any event is received
-  /// 
+  ///
   /// Returns a subscription that can be cancelled
   JSEventSubscription onAny(JSEventHandler handler) {
-    final subscription = JSEventSubscription(this, '*', handler, isWildcard: true);
+    final subscription = JSEventSubscription(
+      this,
+      '*',
+      handler,
+      isWildcard: true,
+    );
     _subscriptions.add(subscription);
     return subscription;
   }
 
   /// Subscribes to events with the given name that match the filter
-  /// 
+  ///
   /// [eventName] The name of the event to subscribe to
   /// [filter] A function that returns true if the event should be handled
   /// [handler] The function to call when a matching event is received
-  /// 
+  ///
   /// Returns a subscription that can be cancelled
   JSEventSubscription onWhere(
     String eventName,
@@ -164,21 +171,23 @@ class JSEventBus {
     _subscriptions.add(subscription);
     return subscription;
   }
-  
+
   /// Gets a stream of all events
-  /// 
+  ///
   /// This can be used with the Stream API for more advanced event handling
   Stream<JSEvent> get eventStream => _eventStreamController.stream;
-  
+
   /// Gets a filtered stream of events with the given name
-  /// 
+  ///
   /// [eventName] The name of the event to filter for
   Stream<JSEvent> eventStreamOf(String eventName) {
-    return _eventStreamController.stream.where((event) => event.name == eventName);
+    return _eventStreamController.stream.where(
+      (event) => event.name == eventName,
+    );
   }
 
   /// Publishes an event to JavaScript
-  /// 
+  ///
   /// [event] The event to publish
   void publish(JSEvent event) {
     _controller.sendToJavaScript('event', data: _eventToJson(event));
@@ -190,7 +199,7 @@ class JSEventBus {
   }
 
   /// Whether there are any subscribers for the given event name
-  /// 
+  ///
   /// [eventName] The name of the event to check for subscribers
   bool hasSubscribers(String eventName) {
     return _subscriptions.any(
@@ -198,7 +207,7 @@ class JSEventBus {
           !subscription.isCancelled && subscription.matchesEvent(eventName),
     );
   }
-  
+
   /// Disposes the event bus and closes all streams
   void dispose() {
     _eventStreamController.close();

@@ -13,22 +13,22 @@ class JSEvent {
   final bool isMainFrame;
 
   /// Creates a new JavaScript event
-  /// 
+  ///
   /// [name] must not be empty
   /// [data] optional data payload for the event
   /// [origin] optional source origin of the event
   /// [isMainFrame] whether the event originated from the main frame, defaults to true
   JSEvent({
-    required this.name, 
-    this.data, 
-    this.origin, 
-    this.isMainFrame = true
+    required this.name,
+    this.data,
+    this.origin,
+    this.isMainFrame = true,
   }) {
     if (name.isEmpty) {
       throw ArgumentError('Event name cannot be empty');
     }
   }
-  
+
   /// Creates a copy of this event with the given fields replaced with new values
   JSEvent copyWith({
     String? name,
@@ -43,37 +43,39 @@ class JSEvent {
       isMainFrame: isMainFrame ?? this.isMainFrame,
     );
   }
-  
+
   @override
   String toString() {
     return 'JSEvent(name: $name, data: $data, origin: $origin, isMainFrame: $isMainFrame)';
   }
-  
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    
+
     return other is JSEvent &&
         other.name == name &&
         other.origin == origin &&
         other.isMainFrame == isMainFrame &&
         _deepEquals(other.data, data);
   }
-  
+
   @override
   int get hashCode => Object.hash(name, origin, isMainFrame, data);
-  
+
   /// Helper method to compare data which might be complex objects
   bool _deepEquals(dynamic a, dynamic b) {
     if (a == null && b == null) return true;
     if (a == null || b == null) return false;
-    
+
     if (a is Map && b is Map) {
       if (a.length != b.length) return false;
-      return a.entries.every((entry) => 
-          b.containsKey(entry.key) && _deepEquals(entry.value, b[entry.key]));
+      return a.entries.every(
+        (entry) =>
+            b.containsKey(entry.key) && _deepEquals(entry.value, b[entry.key]),
+      );
     }
-    
+
     if (a is List && b is List) {
       if (a.length != b.length) return false;
       for (var i = 0; i < a.length; i++) {
@@ -81,7 +83,7 @@ class JSEvent {
       }
       return true;
     }
-    
+
     return a == b;
   }
 }

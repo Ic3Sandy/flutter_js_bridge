@@ -13,22 +13,22 @@ class JSEvent {
   final bool isMainFrame;
 
   /// Creates a new JavaScript event
-  /// 
+  ///
   /// [name] must not be empty
   /// [data] optional data payload for the event
   /// [origin] optional source origin of the event
   /// [isMainFrame] whether the event originated from the main frame, defaults to true
   JSEvent({
-    required this.name, 
-    this.data, 
-    this.origin, 
-    this.isMainFrame = true
+    required this.name,
+    this.data,
+    this.origin,
+    this.isMainFrame = true,
   }) {
     if (name.isEmpty) {
       throw ArgumentError('Event name cannot be empty');
     }
   }
-  
+
   @override
   String toString() {
     return 'JSEvent(name: $name, data: $data, origin: $origin, isMainFrame: $isMainFrame)';

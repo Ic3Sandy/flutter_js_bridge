@@ -79,7 +79,11 @@ class _JSBridgeWebViewState extends State<JSBridgeWebView> {
     // Create WebViewController
     _webViewController =
         WebViewController()
-          ..setJavaScriptMode(widget.javascriptEnabled ? JavaScriptMode.unrestricted : JavaScriptMode.disabled)
+          ..setJavaScriptMode(
+            widget.javascriptEnabled
+                ? JavaScriptMode.unrestricted
+                : JavaScriptMode.disabled,
+          )
           ..setNavigationDelegate(
             NavigationDelegate(
               onPageStarted: (String url) {

@@ -9,10 +9,10 @@ class TestEventBus {
   final Map<String, List<void Function(JSEvent)>> _subscribers = {};
   final List<void Function(JSEvent)> _wildcardSubscribers = [];
   final Map<String, List<FilteredSubscription>> _filteredSubscribers = {};
-  
+
   Subscription on(String eventName, void Function(JSEvent) handler) {
     _subscribers.putIfAbsent(eventName, () => []).add(handler);
-    
+
     return Subscription(() {
       final subs = _subscribers[eventName];
       if (subs != null) {
@@ -23,15 +23,15 @@ class TestEventBus {
       }
     });
   }
-  
+
   Subscription onAny(void Function(JSEvent) handler) {
     _wildcardSubscribers.add(handler);
-    
+
     return Subscription(() {
       _wildcardSubscribers.remove(handler);
     });
   }
-  
+
   Subscription onWhere(
     String eventName,
     bool Function(JSEvent) filter,
@@ -39,7 +39,7 @@ class TestEventBus {
   ) {
     final subscription = FilteredSubscription(filter, handler);
     _filteredSubscribers.putIfAbsent(eventName, () => []).add(subscription);
-    
+
     return Subscription(() {
       final subs = _filteredSubscribers[eventName];
       if (subs != null) {
@@ -50,9 +50,7 @@ class TestEventBus {
       }
     });
   }
-  
 
-  
   void publish(JSEvent event) {
     // Notify specific subscribers
     final specificSubs = _subscribers[event.name];
@@ -61,7 +59,7 @@ class TestEventBus {
         handler(event);
       }
     }
-    
+
     // Notify filtered subscribers
     final filteredSubs = _filteredSubscribers[event.name];
     if (filteredSubs != null) {
@@ -71,15 +69,16 @@ class TestEventBus {
         }
       }
     }
-    
+
     // Notify wildcard subscribers
     for (final handler in List<Function(JSEvent)>.from(_wildcardSubscribers)) {
       handler(event);
     }
   }
-  
+
   bool hasSubscribers(String eventName) {
-    return _subscribers.containsKey(eventName) && _subscribers[eventName]!.isNotEmpty;
+    return _subscribers.containsKey(eventName) &&
+        _subscribers[eventName]!.isNotEmpty;
   }
 }
 
@@ -87,9 +86,9 @@ class TestEventBus {
 class Subscription {
   final SubscriptionCancelFunction _cancelFunction;
   bool _cancelled = false;
-  
+
   Subscription(this._cancelFunction);
-  
+
   void cancel() {
     if (!_cancelled) {
       _cancelFunction();
@@ -102,9 +101,9 @@ class Subscription {
 class FilteredSubscription {
   final bool Function(JSEvent) filter;
   final Function(JSEvent) handler;
-  
+
   FilteredSubscription(this.filter, this.handler);
-  
+
   bool matchesFilter(JSEvent event) => filter(event);
 }
 
@@ -119,10 +118,10 @@ void main() {
     test('should allow subscribing to events by name', () {
       // Arrange
       final eventHandler = (JSEvent event) {};
-      
+
       // Act
       final subscription = eventBus.on('userLogin', eventHandler);
-      
+
       // Assert
       expect(subscription, isNotNull);
       expect(eventBus.hasSubscribers('userLogin'), isTrue);
@@ -132,10 +131,10 @@ void main() {
       // Arrange
       final eventHandler = (JSEvent event) {};
       final subscription = eventBus.on('userLogin', eventHandler);
-      
+
       // Act
       subscription.cancel();
-      
+
       // Assert
       expect(eventBus.hasSubscribers('userLogin'), isFalse);
     });
@@ -144,20 +143,20 @@ void main() {
       // Arrange
       bool loginEventReceived = false;
       bool logoutEventReceived = false;
-      
+
       eventBus.on('userLogin', (JSEvent event) {
         loginEventReceived = true;
         expect(event.name, equals('userLogin'));
         expect(event.data, equals({'userId': '123'}));
       });
-      
+
       eventBus.on('userLogout', (JSEvent event) {
         logoutEventReceived = true;
       });
-      
+
       // Act - publish login event
       eventBus.publish(JSEvent(name: 'userLogin', data: {'userId': '123'}));
-      
+
       // Assert
       expect(loginEventReceived, isTrue);
       expect(logoutEventReceived, isFalse);
@@ -166,15 +165,15 @@ void main() {
     test('should support wildcard subscriptions', () {
       // Arrange
       int eventsReceived = 0;
-      
+
       eventBus.onAny((JSEvent event) {
         eventsReceived++;
       });
-      
+
       // Act - publish multiple events
       eventBus.publish(JSEvent(name: 'userLogin', data: {'userId': '123'}));
       eventBus.publish(JSEvent(name: 'userLogout', data: null));
-      
+
       // Assert
       expect(eventsReceived, equals(2));
     });
@@ -182,20 +181,27 @@ void main() {
     test('should support filtering events by criteria', () {
       // Arrange
       bool adminLoginReceived = false;
-      
-      eventBus.onWhere('userLogin', 
-          (JSEvent event) => event.data is Map && (event.data as Map)['role'] == 'admin', 
-          (JSEvent event) {
-            adminLoginReceived = true;
-          });
-      
+
+      eventBus.onWhere(
+        'userLogin',
+        (JSEvent event) =>
+            event.data is Map && (event.data as Map)['role'] == 'admin',
+        (JSEvent event) {
+          adminLoginReceived = true;
+        },
+      );
+
       // Act - regular user login (should not trigger)
-      eventBus.publish(JSEvent(name: 'userLogin', data: {'userId': '123', 'role': 'user'}));
+      eventBus.publish(
+        JSEvent(name: 'userLogin', data: {'userId': '123', 'role': 'user'}),
+      );
       expect(adminLoginReceived, isFalse);
-      
+
       // Act - admin login (should trigger)
-      eventBus.publish(JSEvent(name: 'userLogin', data: {'userId': '456', 'role': 'admin'}));
-      
+      eventBus.publish(
+        JSEvent(name: 'userLogin', data: {'userId': '456', 'role': 'admin'}),
+      );
+
       // Assert
       expect(adminLoginReceived, isTrue);
     });

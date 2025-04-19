@@ -11,7 +11,7 @@ class JSEventSubscription implements IJSEventSubscription {
   bool _isCancelled = false;
 
   /// Creates a new subscription to events
-  /// 
+  ///
   /// [eventName] The name of the event to subscribe to, or '*' for all events
   /// [handler] The function to call when the event is received
   /// [onCancel] Function to call when this subscription is cancelled
@@ -23,8 +23,8 @@ class JSEventSubscription implements IJSEventSubscription {
     this._onCancel, {
     bool isWildcard = false,
     bool Function(JSEvent)? filter,
-  })  : _isWildcard = isWildcard,
-        _filter = filter;
+  }) : _isWildcard = isWildcard,
+       _filter = filter;
 
   /// Cancels this subscription
   @override
