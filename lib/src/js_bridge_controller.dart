@@ -84,6 +84,13 @@ class JSBridgeController {
         }
       } else {
         debugPrint('No handler registered for action: ${jsMessage.action}');
+        
+        // If a response is expected, send an error response
+        if (jsMessage.expectsResponse) {
+          _sendResponse(jsMessage.id, {
+            'error': 'No handler registered for action: ${jsMessage.action}',
+          });
+        }
       }
     } catch (e) {
       debugPrint('Error handling JavaScript message: $e');

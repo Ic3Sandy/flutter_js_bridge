@@ -147,8 +147,6 @@ void main() {
         expect(fromJsonString.isResponse, false, reason: 'isResponse should be preserved in serialization');
       });
 
-
-
       test('toString should return a formatted string representation', () {
         // Arrange
         final message = createTestMessage();

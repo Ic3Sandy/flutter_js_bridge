@@ -63,6 +63,7 @@ class JSMessage {
       action: 'response',
       data: responseData,
       expectsResponse: false,
+      isResponse: true,
     );
   }
 
@@ -101,7 +102,7 @@ class JSMessage {
 
   @override
   String toString() {
-    return 'JSMessage(id: $id, action: $action, data: $data, expectsResponse: $expectsResponse)';
+    return 'JSMessage(id: $id, action: $action, data: $data, expectsResponse: $expectsResponse, isResponse: $isResponse)';
   }
 
   @override
@@ -112,11 +113,12 @@ class JSMessage {
         other.id == id &&
         other.action == action &&
         other.expectsResponse == expectsResponse &&
+        other.isResponse == isResponse &&
         _deepEquals(other.data, data);
   }
 
   @override
-  int get hashCode => Object.hash(id, action, expectsResponse, data);
+  int get hashCode => Object.hash(id, action, expectsResponse, isResponse, data);
 
   /// Helper method to compare data which might be complex objects
   bool _deepEquals(dynamic a, dynamic b) {
