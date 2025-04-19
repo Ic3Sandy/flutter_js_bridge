@@ -35,7 +35,7 @@ A Flutter library for seamless communication between JavaScript (WebView) and Fl
 - [ ] Queue & retry mechanism: Message queuing and retry logic for unreliable states.
 - [ ] Batch messaging: Support for batching multiple messages/commands for performance.
 - [ ] Lifecycle integration: Hooks for Flutter app lifecycle events to notify JS or manage bridge state.
-- [ ] Testing utilities: Mock/test tools for simulating JS–Flutter communication in tests.
+- [x] Testing utilities: CLI tester for simulating JS–Flutter communication without requiring a Flutter app.
 - [ ] Documentation & example expansion: More advanced examples, error handling, and best practices.
 
 ## Installation
@@ -206,6 +206,108 @@ JSBridgeWebView(
   // ... other parameters
 )
 ```
+
+## CLI Tester
+
+The Flutter JS Bridge library includes a command-line interface (CLI) tester that allows you to test the library's functionality without requiring a Flutter application or WebView. This is particularly useful for development, debugging, and automated testing.
+
+### Setting Up the CLI Tester
+
+1. Navigate to the `cli_tester` directory:
+
+```bash
+cd cli_tester
+```
+
+2. Install dependencies:
+
+```bash
+dart pub get
+```
+
+### Using the CLI Tester
+
+The CLI tester provides several commands to test different aspects of the library:
+
+#### Running the CLI Application
+
+```bash
+dart run bin/flutter_js_bridge_cli.dart --help
+```
+
+This will show all available commands:
+
+```
+Flutter JS Bridge CLI Tester
+A command-line tool to test the Flutter JS Bridge library
+
+Usage:
+  flutter_js_bridge_cli <command> [arguments]
+
+Global options:
+-h, --help       Show help
+-v, --verbose    Show verbose output
+
+Available commands:
+  send-event          Send an event to JavaScript
+  register-handler    Register a handler for JavaScript actions
+  call-js             Call a JavaScript action
+  simulate-js-message Simulate a message from JavaScript
+  start-interactive   Start interactive mode
+```
+
+#### Interactive Mode
+
+The interactive mode allows you to continuously test the library without restarting the CLI:
+
+```bash
+dart run bin/flutter_js_bridge_cli.dart start-interactive
+```
+
+In interactive mode, you can use these commands:
+
+- `send-event <name> [data]` - Send an event with optional JSON data
+- `register-handler <action>` - Register a handler for an action
+- `call-js <action> [data]` - Call a JavaScript action with optional JSON data
+- `simulate-js <action> [data]` - Simulate a message from JavaScript
+- `help` - Show help
+- `exit` - Exit interactive mode
+
+#### Example Commands
+
+```bash
+# Register a handler for form submissions
+dart run bin/flutter_js_bridge_cli.dart register-handler --action formSubmit
+
+# Send an event to JavaScript
+dart run bin/flutter_js_bridge_cli.dart send-event --name buttonClick --data '{"id":"submit-btn"}'
+
+# Simulate a message from JavaScript
+dart run bin/flutter_js_bridge_cli.dart simulate-js-message --action getData --data '{"userId":123}' --expects-response
+```
+
+### Running the Example Scripts
+
+The CLI tester includes example scripts that demonstrate the library's functionality:
+
+```bash
+# Run the simple example
+dart run simple_example.dart
+
+# Run the comprehensive example
+dart run example.dart
+```
+
+### How the CLI Tester Works
+
+The CLI tester provides a standalone implementation of the Flutter JS Bridge library that doesn't depend on Flutter or WebView. It includes:
+
+1. **Mock WebView Controller**: Simulates the WebView environment
+2. **JS Bridge Controller**: Handles communication between Dart and JavaScript
+3. **Event Bus**: Manages event publishing and subscription
+4. **Message Handler**: Processes messages between Dart and JavaScript
+
+This allows you to test the core functionality of the library in a simpler environment, making it easier to develop, debug, and validate your implementation.
 
 ### Loading Content from Flutter Assets
 
