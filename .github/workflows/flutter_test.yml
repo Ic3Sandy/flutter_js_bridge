@@ -1,5 +1,9 @@
 name: Flutter Tests
 
+# Note: You can run the same checks locally before pushing using:
+# Windows: scripts/pre_push_check.bat
+# macOS/Linux: scripts/pre_push_check.sh
+
 on:
   push:
     branches: [ main, master ]
