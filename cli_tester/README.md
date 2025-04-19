@@ -13,6 +13,7 @@ This CLI tester provides a way to test the functionality of the Flutter JS Bridg
 - Call JavaScript actions
 - Simulate messages from JavaScript
 - Interactive mode for continuous testing
+- Debugging tools for logging, message inspection, and performance monitoring
 
 ## Getting Started
 
@@ -41,14 +42,21 @@ dart run bin/flutter_js_bridge_cli.dart simulate-js-message --action "myAction" 
 
 # Start interactive mode
 dart run bin/flutter_js_bridge_cli.dart start-interactive
+
+# Start interactive mode with debugging tools enabled
+dart run bin/flutter_js_bridge_cli.dart start-interactive --debug
 ```
 
 ## Interactive Mode
 
 Interactive mode allows you to continuously test the library without restarting the CLI. Available commands in interactive mode:
 
-- `send-event <name> [data]` - Send an event with optional JSON data
+- `send-event <n> [data]` - Send an event with optional JSON data
 - `register-handler <action>` - Register a handler for an action
+- `debug-log <level> <message>` - Log a message with specified level (debug/info/warning/error)
+- `debug-inspect-messages` - Show recent messages that passed through the bridge
+- `debug-performance` - Show performance statistics
+- `debug-config <option> <value>` - Configure debugging options
 - `call-js <action> [data]` - Call a JavaScript action with optional JSON data
 - `simulate-js <action> [data]` - Simulate a message from JavaScript
 - `help` - Show help

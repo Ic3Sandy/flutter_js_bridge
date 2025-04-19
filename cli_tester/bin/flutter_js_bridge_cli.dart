@@ -8,6 +8,8 @@ import 'package:flutter_js_bridge_cli_tester/js_message.dart';
 import 'package:flutter_js_bridge_cli_tester/js_bridge_controller.dart';
 import 'package:flutter_js_bridge_cli_tester/js_event_bus.dart';
 import 'package:flutter_js_bridge_cli_tester/mock_webview_controller.dart';
+// Import all debug modules
+import 'package:flutter_js_bridge_cli_tester/debug.dart';
 
 void main(List<String> arguments) async {
   final parser =
@@ -71,6 +73,12 @@ void main(List<String> arguments) async {
           abbr: 'v',
           help: 'Show verbose output',
           negatable: false,
+        )
+        ..addFlag(
+          'debug',
+          abbr: 'd',
+          help: 'Enable debugging tools',
+          negatable: false,
         );
 
   try {
@@ -82,6 +90,7 @@ void main(List<String> arguments) async {
     }
 
     final verbose = results['verbose'] as bool;
+    final debug = results['debug'] as bool;
 
     // Create mock controller and bridge
     final mockController = MockWebViewController();
@@ -89,6 +98,32 @@ void main(List<String> arguments) async {
       webViewController: mockController,
     );
     final eventBus = JSEventBus(bridgeController);
+
+    // Create debug manager if debug flag is enabled
+    JSDebugManager? debugManager;
+    if (debug) {
+      debugManager = JSDebugManager(
+        config: JSDebugConfig(
+          isLoggingEnabled: true,
+          logLevel: JSLogLevel.debug,
+          isMessageInspectionEnabled: true,
+          isPerformanceMonitoringEnabled: true,
+        ),
+        onLog: (record) {
+          if (verbose) {
+            print('📝 [${record.level.name.toUpperCase()}] ${record.message}');
+          }
+        },
+        onMessageInspected: (record) {
+          if (verbose) {
+            final direction = record.direction == JSMessageDirection.outgoing
+                ? 'OUTGOING'
+                : 'INCOMING';
+            print('🔍 [$direction] ${record.message.action}: ${record.message.data}');
+          }
+        },
+      );
+    }
 
     // Setup logging for the mock controller
     mockController.onJavaScriptRun = (code) {
@@ -238,11 +273,16 @@ void main(List<String> arguments) async {
         }
 
         print('📤 Calling JavaScript action: $action with data: $data');
-        final result = await bridgeController.callJavaScript(
-          action,
-          data: data,
-        );
-        print('📥 Received response: $result');
+        if (debug && debugManager != null) {
+          final result = await debugManager.trackOperation('call-js-$action',
+              () => bridgeController.callJavaScript(action, data: data));
+          print('✅ JavaScript action called successfully');
+          print('📤 Result: $result');
+        } else {
+          final result = await bridgeController.callJavaScript(action, data: data);
+          print('✅ JavaScript action called successfully');
+          print('📤 Result: $result');
+        }
 
       case 'simulate-js-message':
         if (command['help'] == true) {
@@ -316,7 +356,7 @@ void main(List<String> arguments) async {
           return;
         }
 
-        await startInteractiveMode(bridgeController, eventBus, verbose);
+        await startInteractiveMode(bridgeController, eventBus, verbose, debug, debugManager);
 
       default:
         printUsage(parser);
@@ -331,6 +371,8 @@ Future<void> startInteractiveMode(
   JSBridgeController bridgeController,
   JSEventBus eventBus,
   bool verbose,
+  bool debug,
+  JSDebugManager? debugManager,
 ) async {
   print('\n🚀 Starting interactive mode. Type "help" for available commands.');
   print('Press Ctrl+C to exit.\n');
@@ -342,12 +384,16 @@ Future<void> startInteractiveMode(
 
   final commandHelp = '''
 Available commands:
-  send-event <name> [data]       - Send an event with optional JSON data
-  register-handler <action>      - Register a handler for an action
-  call-js <action> [data]        - Call a JavaScript action with optional JSON data
-  simulate-js <action> [data]    - Simulate a message from JavaScript
-  help                           - Show this help
-  exit                           - Exit interactive mode
+  send-event <name> [data]           - Send an event with optional JSON data
+  register-handler <action>          - Register a handler for an action
+  call-js <action> [data]            - Call a JavaScript action with optional JSON data
+  simulate-js <action> [data]        - Simulate a message from JavaScript
+  debug-log <level> <message>        - Log a message with specified level (debug/info/warning/error)
+  debug-inspect-messages             - Show recent messages that passed through the bridge
+  debug-performance                  - Show performance statistics
+  debug-config <option> <value>      - Configure debugging options
+  help                               - Show this help
+  exit                               - Exit interactive mode
 ''';
 
   while (true) {
@@ -364,6 +410,109 @@ Available commands:
     switch (command) {
       case 'help':
         print(commandHelp);
+
+      case 'debug-log':
+        if (!debug || debugManager == null) {
+          print('Debugging is not enabled. Start with --debug flag.');
+          continue;
+        }
+        if (parts.length < 3) {
+          print('Usage: debug-log <level> <message>');
+          print('Levels: debug, info, warning, error');
+          continue;
+        }
+
+        final level = parts[1].toLowerCase();
+        final message = parts.sublist(2).join(' ');
+
+        switch (level) {
+          case 'debug':
+            debugManager.debug(message);
+            print('📝 Debug message logged: $message');
+          case 'info':
+            debugManager.info(message);
+            print('📝 Info message logged: $message');
+          case 'warning':
+            debugManager.warning(message);
+            print('📝 Warning message logged: $message');
+          case 'error':
+            debugManager.error(message);
+            print('📝 Error message logged: $message');
+          default:
+            print('Invalid log level. Use debug, info, warning, or error.');
+        }
+
+      case 'debug-inspect-messages':
+        if (!debug || debugManager == null) {
+          print('Debugging is not enabled. Start with --debug flag.');
+          continue;
+        }
+
+        final messages = debugManager.messageInspector.getRecentMessages(10);
+        if (messages.isEmpty) {
+          print('No messages recorded yet.');
+        } else {
+          print('\n📊 Recent Messages (${messages.length}):');
+          for (final record in messages) {
+            final direction = record.direction == JSMessageDirection.outgoing
+                ? '➡️ OUT'
+                : '⬅️ IN';
+            print('$direction | ${record.timestamp.toIso8601String()} | ${record.message.action}: ${record.message.data}');
+          }
+        }
+
+      case 'debug-performance':
+        if (!debug || debugManager == null) {
+          print('Debugging is not enabled. Start with --debug flag.');
+          continue;
+        }
+
+        final stats = debugManager.performanceMonitor.getAllOperationStats();
+        if (stats.isEmpty) {
+          print('No performance data recorded yet.');
+        } else {
+          print('\n⏱️ Performance Statistics:');
+          for (final entry in stats.entries) {
+            final stat = entry.value;
+            print('${stat.operationName}: ${stat.count} calls, avg: ${stat.averageDuration.inMicroseconds}μs, ' +
+                'min: ${stat.minDuration.inMicroseconds}μs, max: ${stat.maxDuration.inMicroseconds}μs');
+          }
+        }
+
+      case 'debug-config':
+        if (!debug || debugManager == null) {
+          print('Debugging is not enabled. Start with --debug flag.');
+          continue;
+        }
+
+        if (parts.length < 3) {
+          print('Usage: debug-config <option> <value>');
+          print('Options: logging, inspection, performance, errors');
+          print('Values: on, off');
+          print('Current config: ${debugManager.config}');
+          continue;
+        }
+
+        final option = parts[1].toLowerCase();
+        final value = parts[2].toLowerCase() == 'on';
+
+        var newConfig = debugManager.config;
+        switch (option) {
+          case 'logging':
+            newConfig = newConfig.copyWith(isLoggingEnabled: value);
+          case 'inspection':
+            newConfig = newConfig.copyWith(isMessageInspectionEnabled: value);
+          case 'performance':
+            newConfig = newConfig.copyWith(isPerformanceMonitoringEnabled: value);
+          case 'errors':
+            newConfig = newConfig.copyWith(isErrorTrackingEnabled: value);
+          default:
+            print('Invalid option. Use logging, inspection, performance, or errors.');
+            continue;
+        }
+
+        debugManager.updateConfig(newConfig);
+        print('Debug configuration updated: ${debugManager.config}');
 
       case 'send-event':
         if (parts.length < 2) {
@@ -489,14 +638,15 @@ Available commands:
         }
 
         print('📤 Calling JavaScript action: $action with data: $data');
-        try {
-          final result = await bridgeController.callJavaScript(
-            action,
-            data: data,
-          );
-          print('📥 Received response: $result');
-        } catch (e) {
-          print('Error calling JavaScript: $e');
+        if (debug && debugManager != null) {
+          final result = await debugManager.trackOperation('call-js-$action',
+              () => bridgeController.callJavaScript(action, data: data));
+          print('✅ JavaScript action called successfully');
+          print('📤 Result: $result');
+        } else {
+          final result = await bridgeController.callJavaScript(action, data: data);
+          print('✅ JavaScript action called successfully');
+          print('📤 Result: $result');
         }
 
       case 'simulate-js':

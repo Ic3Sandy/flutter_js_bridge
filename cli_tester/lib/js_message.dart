@@ -14,12 +14,16 @@ class JSMessage {
   /// Whether a response is expected
   final bool expectsResponse;
 
+  /// Whether this message is a response to another message
+  final bool isResponse;
+
   /// Creates a new message
   JSMessage({
     required this.id,
     required this.action,
     this.data,
     this.expectsResponse = false,
+    this.isResponse = false,
   });
 
   /// Creates a message from a JSON string
@@ -30,6 +34,7 @@ class JSMessage {
       action: json['action'] as String,
       data: json['data'],
       expectsResponse: json['expectsResponse'] as bool? ?? false,
+      isResponse: json['isResponse'] as bool? ?? false,
     );
   }
 
@@ -40,6 +45,7 @@ class JSMessage {
       'action': action,
       'data': data,
       'expectsResponse': expectsResponse,
+      'isResponse': isResponse,
     });
   }
 }
