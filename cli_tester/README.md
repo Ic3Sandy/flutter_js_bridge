@@ -92,3 +92,55 @@ Test direct communication with JavaScript:
 # Simulate a response from JavaScript
 > simulate-js response {"name":"John","age":30}
 ```
+
+## Running Test Scripts
+
+The CLI tester comes with test scripts to verify its functionality. These scripts run a series of commands to test different features of the CLI tester.
+
+### Bash Script (Unix/Linux/macOS/WSL)
+
+To run the bash test script:
+
+1. Make the script executable:
+   ```bash
+   chmod +x test_cli.sh
+   ```
+
+2. Run the script:
+   ```bash
+   ./test_cli.sh
+   ```
+
+The script will run various commands and display whether each test passed or failed with color-coded output.
+
+### PowerShell Script (Windows)
+
+To run the PowerShell test script:
+
+```powershell
+.\test_cli.ps1
+```
+
+For a more comprehensive test suite that includes error handling tests:
+
+```powershell
+.\run_tests.ps1
+```
+
+### Test Script Features
+
+- Tests basic commands (help, register-handler, send-event)
+- Tests JavaScript interaction (call-js, simulate-js-message)
+- Tests with different data formats (simple key:value, complex data)
+- Color-coded output for easy readability
+- Summary of all test results
+
+### JSON Data Format
+
+When using the CLI tester or test scripts, you can provide JSON data in several formats:
+
+1. Standard JSON format: `'{"key": "value"}'`
+2. Simple key-value format: `'key:value'`
+3. Multiple key-value pairs: `'key1:value1,key2:value2'`
+
+The CLI tester will automatically parse these formats appropriately.

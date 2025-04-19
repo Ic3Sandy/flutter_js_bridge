@@ -3,11 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
-import '../lib/js_event.dart';
-import '../lib/js_message.dart';
-import '../lib/js_bridge_controller.dart';
-import '../lib/js_event_bus.dart';
-import '../lib/mock_webview_controller.dart';
+import 'package:flutter_js_bridge_cli_tester/js_event.dart';
+import 'package:flutter_js_bridge_cli_tester/js_message.dart';
+import 'package:flutter_js_bridge_cli_tester/js_bridge_controller.dart';
+import 'package:flutter_js_bridge_cli_tester/js_event_bus.dart';
+import 'package:flutter_js_bridge_cli_tester/mock_webview_controller.dart';
 
 void main(List<String> arguments) async {
   final parser = ArgParser()
@@ -80,9 +80,42 @@ void main(List<String> arguments) async {
         
         if (command['data'] != null) {
           try {
-            data = jsonDecode(command['data'] as String);
+            // Get the raw string without attempting to process escapes
+            String jsonStr = command['data'] as String;
+            // Try to parse it directly first
+            try {
+              data = jsonDecode(jsonStr);
+            } catch (_) {
+              // If direct parsing fails, try a simpler approach - create a Map manually
+              if (jsonStr.contains(':')) {
+                // Simple key-value parsing for basic JSON objects
+                final map = <String, dynamic>{};
+                // Remove braces if they exist
+                jsonStr = jsonStr.replaceAll('{', '').replaceAll('}', '');
+                // Split by commas for multiple key-value pairs
+                final pairs = jsonStr.split(',');
+                for (final pair in pairs) {
+                  if (pair.contains(':')) {
+                    final parts = pair.split(':');
+                    if (parts.length == 2) {
+                      String key = parts[0].trim();
+                      String value = parts[1].trim();
+                      // Remove quotes if they exist
+                      key = key.replaceAll('"', '').replaceAll('\'', '');
+                      if (value.startsWith('"') && value.endsWith('"') ||
+                          value.startsWith('\'') && value.endsWith('\'')) {
+                        value = value.substring(1, value.length - 1);
+                      }
+                      map[key] = value;
+                    }
+                  }
+                }
+                data = map;
+              }
+            }
           } catch (e) {
             print('Error parsing JSON data: $e');
+            print('Try using a simple format like: --data "key:value" or --data "key1:value1,key2:value2"');
             return;
           }
         }
@@ -117,9 +150,42 @@ void main(List<String> arguments) async {
         
         if (command['data'] != null) {
           try {
-            data = jsonDecode(command['data'] as String);
+            // Get the raw string without attempting to process escapes
+            String jsonStr = command['data'] as String;
+            // Try to parse it directly first
+            try {
+              data = jsonDecode(jsonStr);
+            } catch (_) {
+              // If direct parsing fails, try a simpler approach - create a Map manually
+              if (jsonStr.contains(':')) {
+                // Simple key-value parsing for basic JSON objects
+                final map = <String, dynamic>{};
+                // Remove braces if they exist
+                jsonStr = jsonStr.replaceAll('{', '').replaceAll('}', '');
+                // Split by commas for multiple key-value pairs
+                final pairs = jsonStr.split(',');
+                for (final pair in pairs) {
+                  if (pair.contains(':')) {
+                    final parts = pair.split(':');
+                    if (parts.length == 2) {
+                      String key = parts[0].trim();
+                      String value = parts[1].trim();
+                      // Remove quotes if they exist
+                      key = key.replaceAll('"', '').replaceAll('\'', '');
+                      if (value.startsWith('"') && value.endsWith('"') ||
+                          value.startsWith('\'') && value.endsWith('\'')) {
+                        value = value.substring(1, value.length - 1);
+                      }
+                      map[key] = value;
+                    }
+                  }
+                }
+                data = map;
+              }
+            }
           } catch (e) {
             print('Error parsing JSON data: $e');
+            print('Try using a simple format like: --data "key:value" or --data "key1:value1,key2:value2"');
             return;
           }
         }
@@ -140,9 +206,42 @@ void main(List<String> arguments) async {
         
         if (command['data'] != null) {
           try {
-            data = jsonDecode(command['data'] as String);
+            // Get the raw string without attempting to process escapes
+            String jsonStr = command['data'] as String;
+            // Try to parse it directly first
+            try {
+              data = jsonDecode(jsonStr);
+            } catch (_) {
+              // If direct parsing fails, try a simpler approach - create a Map manually
+              if (jsonStr.contains(':')) {
+                // Simple key-value parsing for basic JSON objects
+                final map = <String, dynamic>{};
+                // Remove braces if they exist
+                jsonStr = jsonStr.replaceAll('{', '').replaceAll('}', '');
+                // Split by commas for multiple key-value pairs
+                final pairs = jsonStr.split(',');
+                for (final pair in pairs) {
+                  if (pair.contains(':')) {
+                    final parts = pair.split(':');
+                    if (parts.length == 2) {
+                      String key = parts[0].trim();
+                      String value = parts[1].trim();
+                      // Remove quotes if they exist
+                      key = key.replaceAll('"', '').replaceAll('\'', '');
+                      if (value.startsWith('"') && value.endsWith('"') ||
+                          value.startsWith('\'') && value.endsWith('\'')) {
+                        value = value.substring(1, value.length - 1);
+                      }
+                      map[key] = value;
+                    }
+                  }
+                }
+                data = map;
+              }
+            }
           } catch (e) {
             print('Error parsing JSON data: $e');
+            print('Try using a simple format like: --data "key:value" or --data "key1:value1,key2:value2"');
             return;
           }
         }
@@ -224,9 +323,40 @@ Available commands:
         if (parts.length > 2) {
           final dataStr = parts.sublist(2).join(' ');
           try {
-            data = jsonDecode(dataStr);
+            // Try to parse it directly first
+            try {
+              data = jsonDecode(dataStr);
+            } catch (_) {
+              // If direct parsing fails, try a simpler approach - create a Map manually
+              if (dataStr.contains(':')) {
+                // Simple key-value parsing for basic JSON objects
+                final map = <String, dynamic>{};
+                // Remove braces if they exist
+                var cleanStr = dataStr.replaceAll('{', '').replaceAll('}', '');
+                // Split by commas for multiple key-value pairs
+                final pairs = cleanStr.split(',');
+                for (final pair in pairs) {
+                  if (pair.contains(':')) {
+                    final parts = pair.split(':');
+                    if (parts.length == 2) {
+                      String key = parts[0].trim();
+                      String value = parts[1].trim();
+                      // Remove quotes if they exist
+                      key = key.replaceAll('"', '').replaceAll('\'', '');
+                      if (value.startsWith('"') && value.endsWith('"') ||
+                          value.startsWith('\'') && value.endsWith('\'')) {
+                        value = value.substring(1, value.length - 1);
+                      }
+                      map[key] = value;
+                    }
+                  }
+                }
+                data = map;
+              }
+            }
           } catch (e) {
             print('Error parsing JSON data: $e');
+            print('Try using a simple format like: key:value or key1:value1,key2:value2');
             continue;
           }
         }
@@ -262,9 +392,40 @@ Available commands:
         if (parts.length > 2) {
           final dataStr = parts.sublist(2).join(' ');
           try {
-            data = jsonDecode(dataStr);
+            // Try to parse it directly first
+            try {
+              data = jsonDecode(dataStr);
+            } catch (_) {
+              // If direct parsing fails, try a simpler approach - create a Map manually
+              if (dataStr.contains(':')) {
+                // Simple key-value parsing for basic JSON objects
+                final map = <String, dynamic>{};
+                // Remove braces if they exist
+                var cleanStr = dataStr.replaceAll('{', '').replaceAll('}', '');
+                // Split by commas for multiple key-value pairs
+                final pairs = cleanStr.split(',');
+                for (final pair in pairs) {
+                  if (pair.contains(':')) {
+                    final parts = pair.split(':');
+                    if (parts.length == 2) {
+                      String key = parts[0].trim();
+                      String value = parts[1].trim();
+                      // Remove quotes if they exist
+                      key = key.replaceAll('"', '').replaceAll('\'', '');
+                      if (value.startsWith('"') && value.endsWith('"') ||
+                          value.startsWith('\'') && value.endsWith('\'')) {
+                        value = value.substring(1, value.length - 1);
+                      }
+                      map[key] = value;
+                    }
+                  }
+                }
+                data = map;
+              }
+            }
           } catch (e) {
             print('Error parsing JSON data: $e');
+            print('Try using a simple format like: key:value or key1:value1,key2:value2');
             continue;
           }
         }
@@ -289,9 +450,40 @@ Available commands:
         if (parts.length > 2) {
           final dataStr = parts.sublist(2).join(' ');
           try {
-            data = jsonDecode(dataStr);
+            // Try to parse it directly first
+            try {
+              data = jsonDecode(dataStr);
+            } catch (_) {
+              // If direct parsing fails, try a simpler approach - create a Map manually
+              if (dataStr.contains(':')) {
+                // Simple key-value parsing for basic JSON objects
+                final map = <String, dynamic>{};
+                // Remove braces if they exist
+                var cleanStr = dataStr.replaceAll('{', '').replaceAll('}', '');
+                // Split by commas for multiple key-value pairs
+                final pairs = cleanStr.split(',');
+                for (final pair in pairs) {
+                  if (pair.contains(':')) {
+                    final parts = pair.split(':');
+                    if (parts.length == 2) {
+                      String key = parts[0].trim();
+                      String value = parts[1].trim();
+                      // Remove quotes if they exist
+                      key = key.replaceAll('"', '').replaceAll('\'', '');
+                      if (value.startsWith('"') && value.endsWith('"') ||
+                          value.startsWith('\'') && value.endsWith('\'')) {
+                        value = value.substring(1, value.length - 1);
+                      }
+                      map[key] = value;
+                    }
+                  }
+                }
+                data = map;
+              }
+            }
           } catch (e) {
             print('Error parsing JSON data: $e');
+            print('Try using a simple format like: key:value or key1:value1,key2:value2');
             continue;
           }
         }
