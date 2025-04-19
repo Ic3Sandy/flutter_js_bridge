@@ -11,7 +11,8 @@ on:
     branches: [main, master]
 
 jobs:
-  test:
+  flutter_unit_tests:
+    name: Flutter Unit Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -43,9 +44,26 @@ jobs:
 
       - name: Run tests
         run: flutter test
-      
-      # Run CLI tester tests after unit tests
-      - name: Run CLI tester tests
+
+  cli_integration_tests:
+    name: CLI Integration Tests
+    needs: flutter_unit_tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      # Set up Dart SDK
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: "3.7.2"
+
+      - name: Install CLI tester dependencies
+        run: |
+          cd cli_tester
+          dart pub get
+
+      - name: Run CLI integration tests
         run: |
           cd cli_tester
           chmod +x test_cli.sh
