@@ -44,4 +44,17 @@ if %ERRORLEVEL% neq 0 (
     exit /b %ERRORLEVEL%
 )
 
+echo Running CLI tester tests...
+cd cli_tester
+if %ERRORLEVEL% neq 0 (
+    echo Error changing to cli_tester directory
+    exit /b %ERRORLEVEL%
+)
+powershell -ExecutionPolicy Bypass -File .\test_cli.ps1
+if %ERRORLEVEL% neq 0 (
+    echo Error running CLI tester tests
+    exit /b %ERRORLEVEL%
+)
+cd ..
+
 echo All validation checks passed! Your code is ready for the pipeline.

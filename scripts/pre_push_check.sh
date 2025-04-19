@@ -25,4 +25,11 @@ flutter analyze
 echo "Running tests..."
 flutter test
 
+# Run CLI tester tests
+echo "Running CLI tester tests..."
+cd cli_tester
+chmod +x test_cli.sh
+./test_cli.sh
+cd ..
+
 echo "All checks passed! You can now push your changes."

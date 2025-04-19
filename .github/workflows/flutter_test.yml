@@ -43,3 +43,10 @@ jobs:
 
       - name: Run tests
         run: flutter test
+      
+      # Run CLI tester tests after unit tests
+      - name: Run CLI tester tests
+        run: |
+          cd cli_tester
+          chmod +x test_cli.sh
+          ./test_cli.sh
