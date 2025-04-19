@@ -117,7 +117,7 @@ void main() {
   group('Event Bus', () {
     test('should allow subscribing to events by name', () {
       // Arrange
-      final eventHandler = (JSEvent event) {};
+      void eventHandler(JSEvent event) {};
 
       // Act
       final subscription = eventBus.on('userLogin', eventHandler);
@@ -129,7 +129,7 @@ void main() {
 
     test('should allow unsubscribing from events', () {
       // Arrange
-      final eventHandler = (JSEvent event) {};
+      void eventHandler(JSEvent event) {}
       final subscription = eventBus.on('userLogin', eventHandler);
 
       // Act

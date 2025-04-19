@@ -4,7 +4,7 @@ import 'package:mockito/mockito.dart';
 import 'package:flutter_js_bridge/src/js_bridge_controller.dart';
 import 'package:flutter_js_bridge/src/js_event.dart';
 import 'package:flutter_js_bridge/src/event_bus/js_event_bus.dart';
-import 'package:flutter_js_bridge/src/event_bus/js_event_interface.dart';
+
 
 import 'js_event_bus_test.mocks.dart';
 
