@@ -21,23 +21,44 @@ class JSBridgeController {
 
   /// Name of the JavaScript channel for communication
   final String javaScriptChannelName;
+  
+  /// Default length for generated message IDs
+  static const int _messageIdLength = 16;
+  
+  /// Character set for generating message IDs
+  static const String _messageIdChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
   /// Creates a new JSBridgeController with the provided WebViewController
-  JSBridgeController({required this.webViewController, this.javaScriptChannelName = 'FlutterJSBridge'}) {
+  /// 
+  /// [webViewController] The WebViewController to interact with JavaScript
+  /// [javaScriptChannelName] Name of the JavaScript channel for communication, defaults to 'FlutterJSBridge'
+  JSBridgeController({
+    required this.webViewController, 
+    this.javaScriptChannelName = 'FlutterJSBridge'
+  }) {
     _setupJavaScriptChannel();
   }
 
   /// Sets up the JavaScript channel for communication
   void _setupJavaScriptChannel() {
     // Add the JavaScript channel to the WebViewController
-    webViewController.addJavaScriptChannel(javaScriptChannelName, onMessageReceived: _handleIncomingMessage);
+    webViewController.addJavaScriptChannel(
+      javaScriptChannelName, 
+      onMessageReceived: handleIncomingMessage
+    );
 
     // Inject the JavaScript bridge code
     webViewController.runJavaScript(_bridgeJavaScriptCode);
   }
 
   /// Handles messages coming from JavaScript
-  void _handleIncomingMessage(JavaScriptMessage message) {
+  /// 
+  /// This method processes incoming messages from JavaScript, handling responses
+  /// to pending requests and dispatching new actions to registered handlers.
+  /// 
+  /// [message] The JavaScriptMessage received from the WebView
+  @visibleForTesting
+  void handleIncomingMessage(JavaScriptMessage message) {
     try {
       final JSMessage jsMessage = JSMessage.fromJsonString(message.message);
 
@@ -58,6 +79,8 @@ class JSBridgeController {
         if (jsMessage.expectsResponse) {
           _sendResponse(jsMessage.id, result);
         }
+      } else {
+        debugPrint('No handler registered for action: ${jsMessage.action}');
       }
     } catch (e) {
       debugPrint('Error handling JavaScript message: $e');
@@ -65,18 +88,35 @@ class JSBridgeController {
   }
 
   /// Registers a handler for a specific JavaScript action
+  /// 
+  /// [action] The action name to register the handler for
+  /// [handler] The callback function to execute when the action is received
   void registerHandler(String action, JSCallbackHandler handler) {
+    if (action.isEmpty) {
+      throw ArgumentError('Action name cannot be empty');
+    }
     _actionHandlers[action] = handler;
   }
 
   /// Unregisters a handler for a specific JavaScript action
+  /// 
+  /// [action] The action name to unregister the handler for
   void unregisterHandler(String action) {
     _actionHandlers.remove(action);
   }
 
   /// Calls a JavaScript method with optional data and waits for a response
+  /// 
+  /// [action] The action name to call in JavaScript
+  /// [data] Optional data to pass to the JavaScript method
+  /// 
+  /// Returns a Future that completes with the response from JavaScript
   Future<dynamic> callJavaScript(String action, {dynamic data}) {
-    final messageId = _generateMessageId();
+    if (action.isEmpty) {
+      throw ArgumentError('Action name cannot be empty');
+    }
+    
+    final messageId = generateMessageId();
     final completer = Completer<dynamic>();
 
     // Store the callback for later resolution
@@ -92,22 +132,33 @@ class JSBridgeController {
   }
 
   /// Sends a message to JavaScript without expecting a response
+  /// 
+  /// [action] The action name to call in JavaScript
+  /// [data] Optional data to pass to the JavaScript method
   void sendToJavaScript(String action, {dynamic data}) {
+    if (action.isEmpty) {
+      throw ArgumentError('Action name cannot be empty');
+    }
+    
     // Create message
-    final message = JSMessage(id: _generateMessageId(), action: action, data: data, expectsResponse: false);
+    final message = JSMessage(id: generateMessageId(), action: action, data: data, expectsResponse: false);
 
     // Send message to JavaScript
     _sendMessageToJavaScript(message);
   }
 
   /// Sends a response back for a specific message ID
+  /// 
+  /// [messageId] The ID of the message to respond to
+  /// [result] The result data to send back
   void _sendResponse(String messageId, dynamic result) {
     final message = JSMessage(id: messageId, action: 'response', data: result, expectsResponse: false);
-
     _sendMessageToJavaScript(message);
   }
 
   /// Sends a message to JavaScript
+  /// 
+  /// [message] The JSMessage to send to JavaScript
   void _sendMessageToJavaScript(JSMessage message) {
     final jsonString = message.toJsonString().replaceAll("'", "\\'");
     final jsCode = "window.FlutterJSBridge.receiveMessage('$jsonString')";
@@ -115,9 +166,13 @@ class JSBridgeController {
   }
 
   /// Generates a unique message ID
-  String _generateMessageId() {
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    return List.generate(16, (index) => chars[_random.nextInt(chars.length)]).join();
+  /// 
+  /// Returns a randomly generated string of characters to use as a message ID
+  @visibleForTesting
+  String generateMessageId() {
+    return List.generate(_messageIdLength, 
+      (index) => _messageIdChars[_random.nextInt(_messageIdChars.length)])
+      .join();
   }
 
   /// The JavaScript code that will be injected to enable the bridge
@@ -134,6 +189,10 @@ class JSBridgeController {
       
       // Register a handler for Flutter actions
       registerHandler: function(action, handler) {
+        if (!action || typeof action !== 'string') {
+          console.error('FlutterJSBridge: Action name must be a non-empty string');
+          return;
+        }
         this._handlers[action] = handler;
       },
       
@@ -144,6 +203,10 @@ class JSBridgeController {
       
       // Call a Flutter method with optional data
       callFlutter: function(action, data) {
+        if (!action || typeof action !== 'string') {
+          return Promise.reject('Action name must be a non-empty string');
+        }
+        
         return new Promise((resolve, reject) => {
           const messageId = this._generateMessageId();
           
@@ -165,6 +228,11 @@ class JSBridgeController {
       
       // Send data to Flutter without expecting a response
       sendToFlutter: function(action, data) {
+        if (!action || typeof action !== 'string') {
+          console.error('FlutterJSBridge: Action name must be a non-empty string');
+          return;
+        }
+        
         const messageId = this._generateMessageId();
         
         // Prepare the message
@@ -181,25 +249,31 @@ class JSBridgeController {
       
       // Receive message from Flutter
       receiveMessage: function(messageJson) {
-        const message = JSON.parse(messageJson);
-        
-        // Check if this is a response to a pending request
-        if (this._callbacks[message.id]) {
-          const callback = this._callbacks[message.id];
-          delete this._callbacks[message.id];
-          callback(message.data);
-          return;
-        }
-        
-        // Otherwise, process as a new action
-        if (this._handlers[message.action]) {
-          const handler = this._handlers[message.action];
-          const result = handler(message.data);
+        try {
+          const message = JSON.parse(messageJson);
           
-          // If response is expected, send it back
-          if (message.expectsResponse) {
-            this.sendToFlutter('response:' + message.id, result);
+          // Check if this is a response to a pending request
+          if (this._callbacks[message.id]) {
+            const callback = this._callbacks[message.id];
+            delete this._callbacks[message.id];
+            callback(message.data);
+            return;
           }
+          
+          // Otherwise, process as a new action
+          if (this._handlers[message.action]) {
+            const handler = this._handlers[message.action];
+            const result = handler(message.data);
+            
+            // If response is expected, send it back
+            if (message.expectsResponse) {
+              this.sendToFlutter('response:' + message.id, result);
+            }
+          } else {
+            console.warn('FlutterJSBridge: No handler registered for action: ' + message.action);
+          }
+        } catch (error) {
+          console.error('FlutterJSBridge: Error processing message: ' + error);
         }
       },
       

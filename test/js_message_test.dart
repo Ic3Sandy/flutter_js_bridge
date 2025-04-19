@@ -101,5 +101,99 @@ void main() {
       // Assert
       expect(fromJsonString.data, null);
     });
+    
+    group('validation', () {
+      test('empty id - should throw ArgumentError', () {
+        // Act & Assert
+        expect(
+          () => JSMessage(id: '', action: testAction),
+          throwsA(isA<ArgumentError>().having(
+            (e) => e.message,
+            'message',
+            'Message ID cannot be empty',
+          )),
+        );
+      });
+      
+      test('empty action - should throw ArgumentError', () {
+        // Act & Assert
+        expect(
+          () => JSMessage(id: testId, action: ''),
+          throwsA(isA<ArgumentError>().having(
+            (e) => e.message,
+            'message',
+            'Message action cannot be empty',
+          )),
+        );
+      });
+    });
+    
+    test('toString - should return a formatted string representation', () {
+      // Arrange
+      final message = createTestMessage();
+      
+      // Act
+      final result = message.toString();
+      
+      // Assert
+      expect(result, contains(testId));
+      expect(result, contains(testAction));
+      expect(result, contains(testData.toString()));
+      expect(result, contains(expectsResponse.toString()));
+    });
+    
+    test('copyWith - should create a copy with specified changes', () {
+      // Arrange
+      final original = createTestMessage();
+      
+      // Act
+      final copy = original.copyWith(
+        id: 'new-id',
+        action: 'new-action',
+        expectsResponse: false,
+      );
+      
+      // Assert
+      expect(copy.id, 'new-id');
+      expect(copy.action, 'new-action');
+      expect(copy.data, testData);
+      expect(copy.expectsResponse, false);
+    });
+    
+    test('equality - should correctly compare two messages', () {
+      // Arrange
+      final message1 = createTestMessage();
+      final message2 = JSMessage(
+        id: testId,
+        action: testAction,
+        data: testData,
+        expectsResponse: expectsResponse,
+      );
+      final differentMessage = JSMessage(
+        id: 'different-id',
+        action: testAction,
+        data: testData,
+        expectsResponse: expectsResponse,
+      );
+      
+      // Assert
+      expect(message1, equals(message2));
+      expect(message1, isNot(equals(differentMessage)));
+    });
+    
+    test('createResponse - should create a response message with correct properties', () {
+      // Arrange
+      final original = createTestMessage();
+      final responseData = {'result': 'success'};
+      
+      // Act
+      final response = original.createResponse(responseData);
+      
+      // Assert
+      expect(response.id, original.id);
+      expect(response.action, 'response');
+      expect(response.data, responseData);
+      expect(response.expectsResponse, false);
+    });
   });
 }

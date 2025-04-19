@@ -54,5 +54,80 @@ void main() {
       // Assert
       expect(event.data, complexData);
     });
+    
+    test('empty name - should throw ArgumentError', () {
+      // Act & Assert
+      expect(
+        () => JSEvent(name: ''),
+        throwsA(isA<ArgumentError>().having(
+          (e) => e.message,
+          'message',
+          'Event name cannot be empty',
+        )),
+      );
+    });
+    
+    test('toString - should return a formatted string representation', () {
+      // Arrange
+      final event = JSEvent(
+        name: testEventName,
+        data: testEventData,
+        origin: testOrigin,
+      );
+      
+      // Act
+      final result = event.toString();
+      
+      // Assert
+      expect(result, contains(testEventName));
+      expect(result, contains(testOrigin));
+      expect(result, contains(testEventData.toString()));
+    });
+    
+    test('copyWith - should create a copy with specified changes', () {
+      // Arrange
+      final original = JSEvent(
+        name: testEventName,
+        data: testEventData,
+        origin: testOrigin,
+      );
+      
+      // Act
+      final copy = original.copyWith(
+        name: 'new-name',
+        isMainFrame: false,
+      );
+      
+      // Assert
+      expect(copy.name, 'new-name');
+      expect(copy.data, testEventData);
+      expect(copy.origin, testOrigin);
+      expect(copy.isMainFrame, false);
+    });
+    
+    test('equality - should correctly compare two events', () {
+      // Arrange
+      final event1 = JSEvent(
+        name: testEventName,
+        data: testEventData,
+        origin: testOrigin,
+      );
+      
+      final event2 = JSEvent(
+        name: testEventName,
+        data: testEventData,
+        origin: testOrigin,
+      );
+      
+      final differentEvent = JSEvent(
+        name: 'different-name',
+        data: testEventData,
+        origin: testOrigin,
+      );
+      
+      // Assert
+      expect(event1, equals(event2));
+      expect(event1, isNot(equals(differentEvent)));
+    });
   });
 }

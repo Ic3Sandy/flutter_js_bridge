@@ -25,44 +25,139 @@ void main() {
       );
     });
 
-    test('sendToJavaScript - should format and send message correctly', () {
-      // Arrange
-      const action = 'test-send';
-      final data = {'param': 'value'};
+    group('initialization', () {
+      test('constructor - should set up JavaScript channel and inject bridge code', () {
+        // Assert
+        expect(mockWebViewController.jsCode.isNotEmpty, true);
+        expect(controller.javaScriptChannelName, testChannelName);
+        
+        // Verify bridge code was injected
+        final injectedCode = mockWebViewController.jsCode.first;
+        expect(injectedCode.contains('window.FlutterJSBridge'), true);
+        expect(injectedCode.contains('registerHandler'), true);
+        expect(injectedCode.contains('callFlutter'), true);
+      });
+    });
+    
+    group('sending messages', () {
+      test('sendToJavaScript - should format and send message correctly', () {
+        // Arrange
+        const action = 'test-send';
+        final data = {'param': 'value'};
+        mockWebViewController.jsCode.clear(); // Clear initialization code
 
-      // Act
-      controller.sendToJavaScript(action, data: data);
+        // Act
+        controller.sendToJavaScript(action, data: data);
 
-      // Assert
-      expect(mockWebViewController.jsCode.isNotEmpty, true);
-      final jsCode = mockWebViewController.jsCode.last;
+        // Assert
+        expect(mockWebViewController.jsCode.isNotEmpty, true);
+        final jsCode = mockWebViewController.jsCode.last;
 
-      // Verify the JavaScript contains the expected parts
-      expect(jsCode.contains('FlutterJSBridge.receiveMessage'), true);
-      expect(jsCode.contains('"action":"$action"'), true);
-      expect(jsCode.contains('"data":{"param":"value"}'), true);
+        // Verify the JavaScript contains the expected parts
+        expect(jsCode.contains('FlutterJSBridge.receiveMessage'), true);
+        expect(jsCode.contains('"action":"$action"'), true);
+        expect(jsCode.contains('"data":{"param":"value"}'), true);
+      });
+      
+      test('callJavaScript - should send message with expectsResponse=true', () {
+        // Arrange
+        const action = 'test-call';
+        final data = {'param': 'value'};
+        mockWebViewController.jsCode.clear(); // Clear initialization code
+
+        // Act
+        controller.callJavaScript(action, data: data);
+
+        // Assert
+        expect(mockWebViewController.jsCode.isNotEmpty, true);
+        final jsCode = mockWebViewController.jsCode.last;
+
+        // Verify the JavaScript contains the expected parts
+        expect(jsCode.contains('FlutterJSBridge.receiveMessage'), true);
+        expect(jsCode.contains('"action":"$action"'), true);
+        expect(jsCode.contains('"expectsResponse":true'), true);
+      });
     });
 
-    test('registerHandler - should register a handler that can be called', () {
-      // Arrange
-      final testData = {'test': 'data'};
-      const testAction = 'test-action';
-      // Act - Register a handler
-      controller.registerHandler(testAction, (args) {
-        expect(args, [testData]);
-        return 'handler-response';
+    group('handlers', () {
+      test('registerHandler - should register a handler that can be called', () {
+        // Arrange
+        final testData = {'test': 'data'};
+        const testAction = 'test-action';
+        var handlerCalled = false;
+        
+        // Act - Register a handler
+        controller.registerHandler(testAction, (args) {
+          handlerCalled = true;
+          expect(args, [testData]);
+          return 'handler-response';
+        });
+
+        // Simulate JavaScript sending a message
+        final message = JSMessage(
+          id: 'test-id',
+          action: testAction,
+          data: testData,
+          expectsResponse: true,
+        );
+        
+        // Manually invoke the handler through the private method
+        // This is a workaround since we can't directly trigger the JavaScript channel
+        // In a real scenario, this would be called when JavaScript sends a message
+        final jsMessage = MockJavaScriptMessage(message.toJsonString());
+        controller.handleIncomingMessage(jsMessage);
+        
+        // Assert
+        expect(handlerCalled, true);
+        // Check that a response was sent back
+        expect(mockWebViewController.jsCode.last.contains('response'), true);
       });
-
-      // Assert - Verify the controller is set up correctly
-      expect(controller.javaScriptChannelName, testChannelName);
-
-      // Act - Send a message that should trigger the handler
-      controller.sendToJavaScript(testAction, data: testData);
       
-      // Assert - Verify JavaScript was called
-      expect(mockWebViewController.jsCode.isNotEmpty, true);
-      // Note: We can't directly verify the handler was called since it's a private implementation
-      // In a real test, we would need to mock the JavaScript channel callback
+      test('unregisterHandler - should remove a registered handler', () {
+        // Arrange
+        const testAction = 'test-action';
+        var handlerCalled = false;
+        
+        controller.registerHandler(testAction, (args) {
+          handlerCalled = true;
+          return null;
+        });
+        
+        // Act - Unregister the handler
+        controller.unregisterHandler(testAction);
+        
+        // Simulate JavaScript sending a message
+        final message = JSMessage(
+          id: 'test-id',
+          action: testAction,
+          data: null,
+          expectsResponse: false,
+        );
+        
+        // Clear previous JavaScript code
+        mockWebViewController.jsCode.clear();
+        
+        // Manually invoke the handler
+        final jsMessage = MockJavaScriptMessage(message.toJsonString());
+        controller.handleIncomingMessage(jsMessage);
+        
+        // Assert
+        expect(handlerCalled, false);
+        // No JavaScript should be executed since the handler was unregistered
+        expect(mockWebViewController.jsCode.isEmpty, true);
+      });
+    });
+    
+    test('generateMessageId - should create unique IDs', () {
+      // Act
+      final id1 = controller.generateMessageId();
+      final id2 = controller.generateMessageId();
+      
+      // Assert
+      expect(id1.isNotEmpty, true);
+      expect(id2.isNotEmpty, true);
+      expect(id1, isNot(equals(id2))); // IDs should be unique
+      expect(id1.length, equals(16)); // Default length is 16 characters
     });
   });
 }
