@@ -135,7 +135,7 @@ void main() {
         actionName: 'getUserData',
         returnType: 'UserData',
         parameters: [
-          TSParameterDefinition(
+          const TSParameterDefinition(
             name: 'userId',
             type: 'string',
             required: true,
@@ -147,7 +147,7 @@ void main() {
         const TSInterfaceDefinition(
           name: 'UserData',
           properties: [
-            const TSPropertyDefinition(
+            TSPropertyDefinition(
               name: 'id',
               type: 'string',
               required: true,
