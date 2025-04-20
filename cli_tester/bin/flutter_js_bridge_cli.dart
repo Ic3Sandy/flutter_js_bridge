@@ -10,6 +10,8 @@ import 'package:flutter_js_bridge_cli_tester/js_event_bus.dart';
 import 'package:flutter_js_bridge_cli_tester/mock_webview_controller.dart';
 // Import all debug modules
 import 'package:flutter_js_bridge_cli_tester/debug.dart';
+// Import TypeScript definitions modules
+import 'package:flutter_js_bridge_cli_tester/typescript.dart';
 
 void main(List<String> arguments) async {
   final parser =
@@ -65,6 +67,29 @@ void main(List<String> arguments) async {
         ..addCommand(
           'start-interactive',
           ArgParser()
+            ..addFlag('help', abbr: 'h', help: 'Show help', negatable: false),
+        )
+        ..addCommand(
+          'generate-ts-defs',
+          ArgParser()
+            ..addOption(
+              'config',
+              abbr: 'c',
+              help: 'Path to the config file (JSON)',
+              mandatory: false,
+            )
+            ..addOption(
+              'output',
+              abbr: 'o',
+              help: 'Path to the output file (.d.ts)',
+              mandatory: true,
+            )
+            ..addFlag(
+              'extract',
+              abbr: 'e',
+              help: 'Extract definitions from controller',
+              negatable: false,
+            )
             ..addFlag('help', abbr: 'h', help: 'Show help', negatable: false),
         )
         ..addFlag('help', abbr: 'h', help: 'Show help', negatable: false)
@@ -144,73 +169,76 @@ void main(List<String> arguments) async {
       return;
     }
 
-    final command = results.command!;
+    final commandName = results.command!.name;
+    final commandResults = results.command!;
 
-    switch (command.name) {
-      case 'send-event':
-        if (command['help'] == true) {
-          printCommandHelp(parser, 'send-event');
+    if (commandResults['help'] == true) {
+      printCommandHelp(parser, commandName);
+      return;
+    }
+
+    // Create TypeScript definitions CLI command handler
+    final tsDefinitionsCliCommand = TSDefinitionsCliCommand();
+
+    switch (commandName) {
+      case 'generate-ts-defs':
+        final outputPath = commandResults['output'] as String;
+        final configPath = commandResults['config'] as String?;
+        final extract = commandResults['extract'] as bool;
+        
+        try {
+          if (extract) {
+            // Extract TypeScript definitions from controller
+            await tsDefinitionsCliCommand.extractFromController(
+              controller: bridgeController,
+              outputPath: outputPath,
+              verbose: verbose,
+            );
+          } else if (configPath != null) {
+            // Generate TypeScript definitions from config file
+            await tsDefinitionsCliCommand.execute(
+              configPath: configPath,
+              outputPath: outputPath,
+              verbose: verbose,
+            );
+          } else {
+            print('Error: Either --config or --extract must be specified');
+            printCommandHelp(parser, commandName);
+            return;
+          }
+        } catch (e) {
+          print('Error: $e');
           return;
         }
+        break;
+        
+      case 'send-event':
+        final eventName = commandResults['name'] as String;
+        final eventDataStr = commandResults['data'] as String?;
+        dynamic eventData;
 
-        final name = command['name'] as String;
-        dynamic data;
-
-        if (command['data'] != null) {
+        if (eventDataStr != null) {
           try {
-            // Get the raw string without attempting to process escapes
-            String jsonStr = command['data'] as String;
-            // Try to parse it directly first
-            try {
-              data = jsonDecode(jsonStr);
-            } catch (_) {
-              // If direct parsing fails, try a simpler approach - create a Map manually
-              if (jsonStr.contains(':')) {
-                // Simple key-value parsing for basic JSON objects
-                final map = <String, dynamic>{};
-                // Remove braces if they exist
-                jsonStr = jsonStr.replaceAll('{', '').replaceAll('}', '');
-                // Split by commas for multiple key-value pairs
-                final pairs = jsonStr.split(',');
-                for (final pair in pairs) {
-                  if (pair.contains(':')) {
-                    final parts = pair.split(':');
-                    if (parts.length == 2) {
-                      String key = parts[0].trim();
-                      String value = parts[1].trim();
-                      // Remove quotes if they exist
-                      key = key.replaceAll('"', '').replaceAll('\'', '');
-                      if (value.startsWith('"') && value.endsWith('"') ||
-                          value.startsWith('\'') && value.endsWith('\'')) {
-                        value = value.substring(1, value.length - 1);
-                      }
-                      map[key] = value;
-                    }
-                  }
-                }
-                data = map;
-              }
-            }
+            eventData = jsonDecode(eventDataStr);
           } catch (e) {
-            print('Error parsing JSON data: $e');
-            print(
-              'Try using a simple format like: --data "key:value" or --data "key1:value1,key2:value2"',
-            );
+            print('Error parsing event data: $e');
             return;
           }
         }
 
-        final event = JSEvent(name: name, data: data);
-        eventBus.publish(event);
-        print('📤 Event sent: $name with data: $data');
+        final event = JSEvent(name: eventName, data: eventData);
+        eventBus.fire(event);
+
+        if (verbose) {
+          print('Event sent: $eventName');
+          if (eventData != null) {
+            print('Event data: $eventData');
+          }
+        }
+        break;
 
       case 'register-handler':
-        if (command['help'] == true) {
-          printCommandHelp(parser, 'register-handler');
-          return;
-        }
-
-        final action = command['action'] as String;
+        final action = commandResults['action'] as String;
 
         bridgeController.registerHandler(action, (args) {
           print('📥 Handler called for action: $action with args: $args');
@@ -218,59 +246,11 @@ void main(List<String> arguments) async {
         });
 
         print('🔌 Registered handler for action: $action');
+        break;
 
       case 'call-js':
-        if (command['help'] == true) {
-          printCommandHelp(parser, 'call-js');
-          return;
-        }
-
-        final action = command['action'] as String;
-        dynamic data;
-
-        if (command['data'] != null) {
-          try {
-            // Get the raw string without attempting to process escapes
-            String jsonStr = command['data'] as String;
-            // Try to parse it directly first
-            try {
-              data = jsonDecode(jsonStr);
-            } catch (_) {
-              // If direct parsing fails, try a simpler approach - create a Map manually
-              if (jsonStr.contains(':')) {
-                // Simple key-value parsing for basic JSON objects
-                final map = <String, dynamic>{};
-                // Remove braces if they exist
-                jsonStr = jsonStr.replaceAll('{', '').replaceAll('}', '');
-                // Split by commas for multiple key-value pairs
-                final pairs = jsonStr.split(',');
-                for (final pair in pairs) {
-                  if (pair.contains(':')) {
-                    final parts = pair.split(':');
-                    if (parts.length == 2) {
-                      String key = parts[0].trim();
-                      String value = parts[1].trim();
-                      // Remove quotes if they exist
-                      key = key.replaceAll('"', '').replaceAll('\'', '');
-                      if (value.startsWith('"') && value.endsWith('"') ||
-                          value.startsWith('\'') && value.endsWith('\'')) {
-                        value = value.substring(1, value.length - 1);
-                      }
-                      map[key] = value;
-                    }
-                  }
-                }
-                data = map;
-              }
-            }
-          } catch (e) {
-            print('Error parsing JSON data: $e');
-            print(
-              'Try using a simple format like: --data "key:value" or --data "key1:value1,key2:value2"',
-            );
-            return;
-          }
-        }
+        final action = commandResults['action'] as String;
+        final data = commandResults['data'] as String?;
 
         print('📤 Calling JavaScript action: $action with data: $data');
         if (debug && debugManager != null) {
@@ -283,33 +263,12 @@ void main(List<String> arguments) async {
           print('✅ JavaScript action called successfully');
           print('📤 Result: $result');
         }
+        break;
 
       case 'simulate-js-message':
-        if (command['help'] == true) {
-          printCommandHelp(parser, 'simulate-js-message');
-          return;
-        }
-
-        final action = command['action'] as String;
-        final expectsResponse = command['expects-response'] as bool;
-        dynamic data;
-
-        if (command['data'] != null) {
-          try {
-            // Get the raw string without attempting to process escapes
-            String jsonStr = command['data'] as String;
-            // Try to parse it directly first
-            try {
-              data = jsonDecode(jsonStr);
-            } catch (_) {
-              // If direct parsing fails, try a simpler approach - create a Map manually
-              if (jsonStr.contains(':')) {
-                // Simple key-value parsing for basic JSON objects
-                final map = <String, dynamic>{};
-                // Remove braces if they exist
-                jsonStr = jsonStr.replaceAll('{', '').replaceAll('}', '');
-                // Split by commas for multiple key-value pairs
-                final pairs = jsonStr.split(',');
+        final action = commandResults['action'] as String;
+        final expectsResponse = commandResults['expects-response'] as bool;
+        final data = commandResults['data'] as String?;
                 for (final pair in pairs) {
                   if (pair.contains(':')) {
                     final parts = pair.split(':');

@@ -1,0 +1,80 @@
+{
+  "interfaces": [
+    {
+      "name": "UserData",
+      "properties": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": true,
+          "description": "User ID"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "User name"
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "required": true,
+          "description": "User email"
+        },
+        {
+          "name": "age",
+          "type": "number",
+          "required": false,
+          "description": "User age (optional)"
+        }
+      ],
+      "description": "Represents user data"
+    },
+    {
+      "name": "Settings",
+      "properties": [
+        {
+          "name": "theme",
+          "type": "string",
+          "required": true,
+          "description": "UI theme (light/dark)"
+        },
+        {
+          "name": "notifications",
+          "type": "boolean",
+          "required": true,
+          "description": "Whether notifications are enabled"
+        }
+      ],
+      "description": "User settings configuration"
+    }
+  ],
+  "actions": [
+    {
+      "name": "getUserData",
+      "parameters": [
+        {
+          "name": "userId",
+          "type": "string",
+          "required": true,
+          "description": "The ID of the user to fetch"
+        }
+      ],
+      "returnType": "UserData",
+      "description": "Fetches user data from Flutter"
+    },
+    {
+      "name": "saveSettings",
+      "parameters": [
+        {
+          "name": "settings",
+          "type": "Settings",
+          "required": true,
+          "description": "The settings to save"
+        }
+      ],
+      "returnType": "boolean",
+      "description": "Saves user settings to Flutter"
+    }
+  ]
+}

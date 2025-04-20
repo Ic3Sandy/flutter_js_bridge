@@ -11,3 +11,6 @@ export 'src/event_bus/js_event_subscription.dart';
 
 // Debugging Tools
 export 'src/debug.dart';
+
+// TypeScript Definitions
+export 'src/typescript.dart';
