@@ -22,7 +22,7 @@ void main() {
 
     test('should generate TypeScript definitions for custom actions', () {
       final actions = [
-        TSActionDefinition(
+        const TSActionDefinition(
           name: 'getUserData',
           parameters: [
             TSParameterDefinition(name: 'userId', type: 'string', required: true),
@@ -30,7 +30,7 @@ void main() {
           returnType: 'Promise<UserData>',
           description: 'Fetches user data from Flutter',
         ),
-        TSActionDefinition(
+        const TSActionDefinition(
           name: 'saveSettings',
           parameters: [
             TSParameterDefinition(name: 'settings', type: 'Settings', required: true),
@@ -50,7 +50,7 @@ void main() {
 
     test('should generate TypeScript interface definitions', () {
       final interfaces = [
-        TSInterfaceDefinition(
+        const TSInterfaceDefinition(
           name: 'UserData',
           properties: [
             TSPropertyDefinition(name: 'id', type: 'string', required: true),
@@ -60,7 +60,7 @@ void main() {
           ],
           description: 'Represents user data',
         ),
-        TSInterfaceDefinition(
+        const TSInterfaceDefinition(
           name: 'Settings',
           properties: [
             TSPropertyDefinition(name: 'theme', type: 'string', required: true),
@@ -86,7 +86,7 @@ void main() {
 
     test('should generate complete TypeScript definition file', () {
       final interfaces = [
-        TSInterfaceDefinition(
+        const TSInterfaceDefinition(
           name: 'UserData',
           properties: [
             TSPropertyDefinition(name: 'id', type: 'string', required: true),
@@ -96,7 +96,7 @@ void main() {
       ];
 
       final actions = [
-        TSActionDefinition(
+        const TSActionDefinition(
           name: 'getUserData',
           parameters: [
             TSParameterDefinition(name: 'userId', type: 'string', required: true),

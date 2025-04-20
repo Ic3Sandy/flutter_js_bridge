@@ -29,20 +29,19 @@ void main() {
       // Arrange
       const actionName = 'getUserData';
       const returnType = 'UserData';
-      final parameters = [
-        TSParameterDefinition(
-          name: 'userId',
-          type: 'string',
-          required: true,
-        ),
-      ];
       const description = 'Gets user data by ID';
 
       // Act
       service.registerActionMetadata(
         actionName: actionName,
         returnType: returnType,
-        parameters: parameters,
+        parameters: const [
+          TSParameterDefinition(
+            name: 'userId',
+            type: 'string',
+            required: true,
+          ),
+        ],
         description: description,
       );
 
@@ -55,7 +54,7 @@ void main() {
 
     test('should register interface definition', () {
       // Arrange
-      final interface = TSInterfaceDefinition(
+      const interface = TSInterfaceDefinition(
         name: 'UserData',
         properties: [
           TSPropertyDefinition(
@@ -84,22 +83,23 @@ void main() {
     test('should register handler with metadata', () {
       // Arrange
       const actionName = 'getUserData';
-      final handler = (List<dynamic> args) => {'id': '123', 'name': 'Test User'};
+      dynamic handler(List<dynamic> args) => {'id': '123', 'name': 'Test User'};
       const returnType = 'UserData';
-      final parameters = [
-        TSParameterDefinition(
-          name: 'userId',
-          type: 'string',
-          required: true,
-        ),
-      ];
+      const description = 'Gets user data by ID';
 
       // Act
       service.registerHandlerWithMetadata(
         actionName: actionName,
         handler: handler,
         returnType: returnType,
-        parameters: parameters,
+        parameters: const [
+          TSParameterDefinition(
+            name: 'userId',
+            type: 'string',
+            required: true,
+          ),
+        ],
+        description: description,
       );
 
       // Assert
@@ -131,10 +131,10 @@ void main() {
       );
 
       service.registerInterface(
-        TSInterfaceDefinition(
+        const TSInterfaceDefinition(
           name: 'UserData',
           properties: [
-            TSPropertyDefinition(
+            const TSPropertyDefinition(
               name: 'id',
               type: 'string',
               required: true,

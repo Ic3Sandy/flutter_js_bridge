@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+
 import 'package:flutter_js_bridge/src/typescript/ts_definitions_generator.dart';
 import 'package:flutter_js_bridge/src/typescript/ts_definitions_models.dart';
 
@@ -31,11 +33,11 @@ class TSDefinitionsCLI {
           await _handleGenerateCommand(args.sublist(1));
           break;
         default:
-          print('Unknown command: $command');
+          debugPrint('Unknown command: $command');
           _printHelp();
       }
     } catch (e) {
-      print('Error: $e');
+      debugPrint('Error: $e');
       _printHelp();
     }
   }
@@ -62,13 +64,13 @@ class TSDefinitionsCLI {
     }
 
     if (configPath == null) {
-      print('Error: Config file path is required');
+      debugPrint('Error: Config file path is required');
       _printHelp();
       return;
     }
 
     if (outputPath == null) {
-      print('Error: Output file path is required');
+      debugPrint('Error: Output file path is required');
       _printHelp();
       return;
     }
@@ -84,7 +86,7 @@ class TSDefinitionsCLI {
     try {
       final configFile = File(configPath);
       if (!await configFile.exists()) {
-        print('Error: Config file not found: $configPath');
+        debugPrint('Error: Config file not found: $configPath');
         return;
       }
 
@@ -117,16 +119,16 @@ class TSDefinitionsCLI {
       final outputFile = File(outputPath);
       await outputFile.writeAsString(definitions);
 
-      print('TypeScript definitions generated successfully: $outputPath');
+      debugPrint('TypeScript definitions generated successfully: $outputPath');
     } catch (e) {
-      print('Error generating TypeScript definitions: $e');
+      debugPrint('Error generating TypeScript definitions: $e');
       rethrow;
     }
   }
 
   /// Prints help information
   void _printHelp() {
-    print('''
+    debugPrint('''
 Flutter JS Bridge TypeScript Definitions Generator
 
 Usage:
