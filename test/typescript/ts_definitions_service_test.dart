@@ -19,6 +19,19 @@ void main() {
     setUp(() {
       mockController = MockJSBridgeController();
       mockGenerator = MockTSDefinitionsGenerator();
+      
+      // Setup default stubs for the mock generator
+      when(mockGenerator.generateDefinitionFile(
+        interfaces: anyNamed('interfaces'),
+        actions: anyNamed('actions'),
+      )).thenReturn('// TypeScript definitions');
+      
+      when(mockGenerator.generateActionsDefinitions(any))
+          .thenReturn('// Actions definitions');
+      
+      when(mockGenerator.generateInterfaceDefinitions(any))
+          .thenReturn('// Interface definitions');
+      
       service = TSDefinitionsService(
         controller: mockController,
         generator: mockGenerator,
