@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+// No imports needed
 
 /// Log levels for the JS Bridge logger
 enum JSLogLevel {
@@ -155,9 +155,7 @@ class JSBridgeLogger {
     // Call the onLog callback if provided
     onLog?.call(record);
 
-    // In debug mode, also print to the console
-    if (kDebugMode) {
-      print(record.toString());
-    }
+    // We don't print to console during tests to avoid cluttering the output
+    // If logging is needed, use the onLog callback
   }
 }

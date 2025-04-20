@@ -174,13 +174,25 @@ void main() {
     });
 
     test('should include timestamp in logs', () {
+      // Arrange
+      final beforeTest = DateTime.now();
+      
       // Act
       logger.debug(kDebugMessage);
 
       // Assert
       expect(capturedLogs.length, 1, reason: 'Should capture the log message');
       expect(capturedLogs[0].timestamp, isNotNull, reason: 'Log record should include a timestamp');
-      expect(capturedLogs[0].timestamp.isBefore(DateTime.now()), isTrue, reason: 'Log timestamp should be before current time');
+      
+      // Use a more reliable timestamp comparison
+      // The log timestamp should be after or equal to beforeTest and before or equal to afterTest
+      final afterTest = DateTime.now();
+      expect(
+        capturedLogs[0].timestamp.isAfter(beforeTest.subtract(const Duration(seconds: 1))) &&
+        capturedLogs[0].timestamp.isBefore(afterTest.add(const Duration(seconds: 1))),
+        isTrue,
+        reason: 'Log timestamp should be within a reasonable time range'
+      );
     });
   });
 }

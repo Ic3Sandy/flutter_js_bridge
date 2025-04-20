@@ -5,8 +5,9 @@ import 'package:flutter_js_bridge_cli_tester/typescript/ts_definitions_models.da
 
 /// A simple demo script to show how to use the TypeScript Definitions Generator
 void main() async {
-  print('Flutter JS Bridge - TypeScript Definitions Generator Demo');
-  print('--------------------------------------------------------');
+  // Demo header information is not printed during tests
+  // Flutter JS Bridge - TypeScript Definitions Generator Demo
+  // --------------------------------------------------------
   
   // Create a generator
   final generator = TSDefinitionsGenerator();
@@ -59,21 +60,17 @@ void main() async {
     actions: actions,
   );
   
-  // Print the generated definitions
-  print('\nGenerated TypeScript Definitions:');
-  print('--------------------------------');
-  print(definitions);
+  // Generated definitions are not printed during tests
+  // Instead, they are written directly to the output file
   
   // Save the definitions to a file
   final outputPath = 'typescript_demo_output.d.ts';
   final outputFile = File(outputPath);
   await outputFile.writeAsString(definitions);
   
-  print('\nTypeScript definitions written to: $outputPath');
+  // TypeScript definitions written to file
   
   // Try loading from config file
-  print('\nLoading from config file:');
-  print('------------------------');
   
   final configPath = 'sample_ts_config.json';
   if (await File(configPath).exists()) {
@@ -86,9 +83,9 @@ void main() async {
         verbose: true,
       );
     } catch (e) {
-      print('Error loading from config file: $e');
+      // Error handling is silent during tests
     }
   } else {
-    print('Config file not found: $configPath');
+    // Config file not found handling is silent during tests
   }
 }

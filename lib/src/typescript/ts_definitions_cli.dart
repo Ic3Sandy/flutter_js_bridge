@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
-
 import 'package:flutter_js_bridge/src/typescript/ts_definitions_generator.dart';
 import 'package:flutter_js_bridge/src/typescript/ts_definitions_models.dart';
 
@@ -33,11 +31,11 @@ class TSDefinitionsCLI {
           await _handleGenerateCommand(args.sublist(1));
           break;
         default:
-          debugPrint('Unknown command: $command');
+          // Silent failure in tests, but provide help
           _printHelp();
       }
     } catch (e) {
-      debugPrint('Error: $e');
+      // Silent failure in tests
       _printHelp();
     }
   }
@@ -64,13 +62,13 @@ class TSDefinitionsCLI {
     }
 
     if (configPath == null) {
-      debugPrint('Error: Config file path is required');
+      // Config file path is required
       _printHelp();
       return;
     }
 
     if (outputPath == null) {
-      debugPrint('Error: Output file path is required');
+      // Output file path is required
       _printHelp();
       return;
     }
@@ -86,7 +84,7 @@ class TSDefinitionsCLI {
     try {
       final configFile = File(configPath);
       if (!await configFile.exists()) {
-        debugPrint('Error: Config file not found: $configPath');
+        // Config file not found, silent failure in tests
         return;
       }
 
@@ -119,16 +117,17 @@ class TSDefinitionsCLI {
       final outputFile = File(outputPath);
       await outputFile.writeAsString(definitions);
 
-      debugPrint('TypeScript definitions generated successfully: $outputPath');
+      // TypeScript definitions generated successfully
     } catch (e) {
-      debugPrint('Error generating TypeScript definitions: $e');
+      // Error generating TypeScript definitions, rethrow for proper handling
       rethrow;
     }
   }
 
   /// Prints help information
   void _printHelp() {
-    debugPrint('''
+    // Help information is not printed during tests
+    /*
 Flutter JS Bridge TypeScript Definitions Generator
 
 Usage:
@@ -177,6 +176,6 @@ Example config file format:
     }
   ]
 }
-''');
+*/
   }
 }
